@@ -1,0 +1,15 @@
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\config\CorsConfig.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\config\SecurityConfig.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\controller\AuthController.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\controller\MensagemController.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\controller\UsuarioController.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\dto\LoginRequest.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\dto\LoginResponse.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\dto\UsuarioDTO.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\model\entity\Mensagem.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\model\entity\Usuario.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\model\repository\MensagemRepository.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\model\repository\UsuarioRepository.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\service\MensagemService.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\service\UsuarioService.java
+C:\ESCOLA - PEDRO - TCC\TCC LOGYM 1\logym-backend-v2 - Copia\src\main\java\br\itb\projeto\logym\Startup.java
