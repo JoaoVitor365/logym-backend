@@ -71,6 +71,12 @@ public class Academia {
     @Column(length = 300)
     private String facilidades;
 
+    @Transient
+    private List<Long> facilidadeIds;
+
+    @Transient
+    private List<Facilidade> facilidadesVinculadas;
+
     private BigDecimal nota;
 
     @ManyToOne
@@ -164,6 +170,14 @@ public class Academia {
 
     public String getFacilidades() {
         return facilidades;
+    }
+
+    public List<Long> getFacilidadeIds() {
+        return facilidadeIds;
+    }
+
+    public List<Facilidade> getFacilidadesVinculadas() {
+        return facilidadesVinculadas;
     }
 
     public BigDecimal getNota() {
@@ -264,6 +278,14 @@ public class Academia {
 
     public void setFacilidades(String facilidades) {
         this.facilidades = facilidades;
+    }
+
+    public void setFacilidadeIds(List<Long> facilidadeIds) {
+        this.facilidadeIds = facilidadeIds;
+    }
+
+    public void setFacilidadesVinculadas(List<Facilidade> facilidadesVinculadas) {
+        this.facilidadesVinculadas = facilidadesVinculadas;
     }
 
     public void setNota(BigDecimal nota) {

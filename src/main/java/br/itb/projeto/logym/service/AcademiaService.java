@@ -16,11 +16,15 @@ import org.springframework.transaction.annotation.Transactional;
 import br.itb.projeto.logym.model.entity.Academia;
 import br.itb.projeto.logym.model.entity.Categoria;
 import br.itb.projeto.logym.model.entity.CategoriaAcademia;
+import br.itb.projeto.logym.model.entity.Facilidade;
+import br.itb.projeto.logym.model.entity.FacilidadeAcademia;
 import br.itb.projeto.logym.model.entity.Gerente;
 import br.itb.projeto.logym.model.entity.Usuario;
 import br.itb.projeto.logym.repository.AcademiaRepository;
 import br.itb.projeto.logym.repository.CategoriaAcademiaRepository;
 import br.itb.projeto.logym.repository.CategoriaRepository;
+import br.itb.projeto.logym.repository.FacilidadeAcademiaRepository;
+import br.itb.projeto.logym.repository.FacilidadeRepository;
 import br.itb.projeto.logym.repository.GerenteRepository;
 import br.itb.projeto.logym.repository.UsuarioRepository;
 import br.itb.projeto.logym.util.DocumentoValidator;
@@ -38,18 +42,24 @@ public class AcademiaService {
     private final UsuarioRepository usuarioRepository;
     private final CategoriaRepository categoriaRepository;
     private final CategoriaAcademiaRepository categoriaAcademiaRepository;
+    private final FacilidadeRepository facilidadeRepository;
+    private final FacilidadeAcademiaRepository facilidadeAcademiaRepository;
 
     public AcademiaService(
             AcademiaRepository academiaRepository,
             GerenteRepository gerenteRepository,
             UsuarioRepository usuarioRepository,
             CategoriaRepository categoriaRepository,
-            CategoriaAcademiaRepository categoriaAcademiaRepository) {
+            CategoriaAcademiaRepository categoriaAcademiaRepository,
+            FacilidadeRepository facilidadeRepository,
+            FacilidadeAcademiaRepository facilidadeAcademiaRepository) {
         this.academiaRepository = academiaRepository;
         this.gerenteRepository = gerenteRepository;
         this.usuarioRepository = usuarioRepository;
         this.categoriaRepository = categoriaRepository;
         this.categoriaAcademiaRepository = categoriaAcademiaRepository;
+        this.facilidadeRepository = facilidadeRepository;
+        this.facilidadeAcademiaRepository = facilidadeAcademiaRepository;
     }
 
     public List<Academia> findAllAtivas() {
@@ -120,13 +130,20 @@ public class AcademiaService {
 
         List<Long> categoriaIds = academia.getCategoriaIds();
         List<Categoria> categoriasSelecionadas = buscarCategoriasAtivas(categoriaIds);
+        List<Long> facilidadeIds = academia.getFacilidadeIds();
+        List<Facilidade> facilidadesSelecionadas = buscarFacilidadesAtivas(facilidadeIds);
 
         if (categoriaIds != null) {
             academia.setCategorias(montarTextoCategorias(categoriasSelecionadas));
         }
 
+        if (facilidadeIds != null) {
+            academia.setFacilidades(montarTextoFacilidades(facilidadesSelecionadas));
+        }
+
         Academia academiaSalva = academiaRepository.save(academia);
         sincronizarCategorias(academiaSalva, categoriasSelecionadas, categoriaIds != null);
+        sincronizarFacilidades(academiaSalva, facilidadesSelecionadas, facilidadeIds != null);
 
         return carregarCategoriasVinculadas(academiaSalva);
     }
@@ -164,13 +181,20 @@ public class AcademiaService {
 
         List<Long> categoriaIds = dadosAtualizados.getCategoriaIds();
         List<Categoria> categoriasSelecionadas = buscarCategoriasAtivas(categoriaIds);
+        List<Long> facilidadeIds = dadosAtualizados.getFacilidadeIds();
+        List<Facilidade> facilidadesSelecionadas = buscarFacilidadesAtivas(facilidadeIds);
 
         if (categoriaIds != null) {
             academia.setCategorias(montarTextoCategorias(categoriasSelecionadas));
         }
 
+        if (facilidadeIds != null) {
+            academia.setFacilidades(montarTextoFacilidades(facilidadesSelecionadas));
+        }
+
         Academia academiaSalva = academiaRepository.save(academia);
         sincronizarCategorias(academiaSalva, categoriasSelecionadas, categoriaIds != null);
+        sincronizarFacilidades(academiaSalva, facilidadesSelecionadas, facilidadeIds != null);
 
         return carregarCategoriasVinculadas(academiaSalva);
     }
@@ -240,6 +264,20 @@ public class AcademiaService {
 
         academia.setCategoriasVinculadas(categorias);
         academia.setCategoriaIds(categorias.stream().map(Categoria::getId).toList());
+        carregarFacilidadesVinculadas(academia);
+
+        return academia;
+    }
+
+    private Academia carregarFacilidadesVinculadas(Academia academia) {
+        List<Facilidade> facilidades = facilidadeAcademiaRepository
+                .findByAcademiaIdAndStatusFacilidadeAcademia(academia.getId(), "ATIVO")
+                .stream()
+                .map(FacilidadeAcademia::getFacilidade)
+                .toList();
+
+        academia.setFacilidadesVinculadas(facilidades);
+        academia.setFacilidadeIds(facilidades.stream().map(Facilidade::getId).toList());
 
         return academia;
     }
@@ -268,6 +306,32 @@ public class AcademiaService {
         }
 
         return categorias;
+    }
+
+    private List<Facilidade> buscarFacilidadesAtivas(List<Long> facilidadeIds) {
+        if (facilidadeIds == null) {
+            return List.of();
+        }
+
+        Set<Long> idsUnicos = new LinkedHashSet<>(facilidadeIds);
+        List<Facilidade> facilidades = new ArrayList<>();
+
+        for (Long facilidadeId : idsUnicos) {
+            if (facilidadeId == null) {
+                continue;
+            }
+
+            Facilidade facilidade = facilidadeRepository.findById(facilidadeId)
+                    .orElseThrow(() -> new RuntimeException("Facilidade nao encontrada."));
+
+            if (!"ATIVO".equals(facilidade.getStatusFacilidade())) {
+                throw new RuntimeException("Facilidade inativa nao pode ser vinculada a uma academia.");
+            }
+
+            facilidades.add(facilidade);
+        }
+
+        return facilidades;
     }
 
     private void sincronizarCategorias(
@@ -331,8 +395,73 @@ public class AcademiaService {
         }
     }
 
+    private void sincronizarFacilidades(
+            Academia academia,
+            List<Facilidade> facilidadesSelecionadas,
+            boolean deveSincronizar) {
+
+        if (!deveSincronizar) {
+            return;
+        }
+
+        Set<Long> idsSelecionados = facilidadesSelecionadas.stream()
+                .map(Facilidade::getId)
+                .collect(LinkedHashSet::new, Set::add, Set::addAll);
+
+        List<FacilidadeAcademia> vinculosAtuais = facilidadeAcademiaRepository.findByAcademiaId(academia.getId());
+        Map<Long, FacilidadeAcademia> vinculoPorFacilidadeId = new LinkedHashMap<>();
+        List<FacilidadeAcademia> vinculosParaSalvar = new ArrayList<>();
+
+        for (FacilidadeAcademia vinculo : vinculosAtuais) {
+            Long facilidadeId = vinculo.getFacilidade().getId();
+
+            if (!vinculoPorFacilidadeId.containsKey(facilidadeId)) {
+                vinculoPorFacilidadeId.put(facilidadeId, vinculo);
+                continue;
+            }
+
+            if ("ATIVO".equals(vinculo.getStatusFacilidadeAcademia())) {
+                vinculo.setStatusFacilidadeAcademia("INATIVO");
+                vinculosParaSalvar.add(vinculo);
+            }
+        }
+
+        for (Facilidade facilidade : facilidadesSelecionadas) {
+            FacilidadeAcademia vinculo = vinculoPorFacilidadeId.get(facilidade.getId());
+
+            if (vinculo == null) {
+                vinculo = new FacilidadeAcademia();
+                vinculo.setAcademia(academia);
+                vinculo.setFacilidade(facilidade);
+            }
+
+            if (!"ATIVO".equals(vinculo.getStatusFacilidadeAcademia())) {
+                vinculo.setStatusFacilidadeAcademia("ATIVO");
+                vinculosParaSalvar.add(vinculo);
+            }
+        }
+
+        for (FacilidadeAcademia vinculo : vinculoPorFacilidadeId.values()) {
+            Long facilidadeId = vinculo.getFacilidade().getId();
+
+            if (!idsSelecionados.contains(facilidadeId)
+                    && "ATIVO".equals(vinculo.getStatusFacilidadeAcademia())) {
+                vinculo.setStatusFacilidadeAcademia("INATIVO");
+                vinculosParaSalvar.add(vinculo);
+            }
+        }
+
+        if (!vinculosParaSalvar.isEmpty()) {
+            facilidadeAcademiaRepository.saveAll(vinculosParaSalvar);
+        }
+    }
+
     private String montarTextoCategorias(List<Categoria> categorias) {
         return String.join(", ", categorias.stream().map(Categoria::getNome).toList());
+    }
+
+    private String montarTextoFacilidades(List<Facilidade> facilidades) {
+        return String.join(", ", facilidades.stream().map(Facilidade::getNome).toList());
     }
 
     private void atualizarCoordenadas(Academia academia, Academia dadosAtualizados) {

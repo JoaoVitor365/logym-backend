@@ -47,6 +47,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/academias/proximas/usuario/*").permitAll()
                         .requestMatchers("/categorias/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/categorias", "/categorias/", "/categorias/ativas").permitAll()
+                        .requestMatchers("/facilidades/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/facilidades", "/facilidades/", "/facilidades/ativas").permitAll()
                         // Usuário / perfil / foto
                         .requestMatchers(HttpMethod.GET, "/usuarios/*").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/usuarios/*").permitAll()
