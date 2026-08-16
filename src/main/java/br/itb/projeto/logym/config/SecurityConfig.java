@@ -45,6 +45,8 @@ public class SecurityConfig {
                         // Academias
                         .requestMatchers(HttpMethod.GET, "/academias", "/academias/", "/academias/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/academias/proximas/usuario/*").permitAll()
+                        .requestMatchers("/categorias/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/categorias", "/categorias/", "/categorias/ativas").permitAll()
                         // Usuário / perfil / foto
                         .requestMatchers(HttpMethod.GET, "/usuarios/*").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/usuarios/*").permitAll()

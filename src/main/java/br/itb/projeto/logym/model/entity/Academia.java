@@ -2,6 +2,7 @@ package br.itb.projeto.logym.model.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.persistence.*;
 
@@ -52,8 +53,20 @@ public class Academia {
     @Column(length = 100)
     private String email;
 
+    @Column(precision = 10, scale = 7)
+    private BigDecimal latitude;
+
+    @Column(precision = 10, scale = 7)
+    private BigDecimal longitude;
+
     @Column(length = 300)
     private String categorias;
+
+    @Transient
+    private List<Long> categoriaIds;
+
+    @Transient
+    private List<Categoria> categoriasVinculadas;
 
     @Column(length = 300)
     private String facilidades;
@@ -69,6 +82,9 @@ public class Academia {
 
     @Column(length = 20, nullable = false)
     private String statusAcademia;
+
+    @Column(length = 20)
+    private String statusAnteriorBloqueioGerente;
 
     public Long getId() {
         return id;
@@ -126,8 +142,24 @@ public class Academia {
         return email;
     }
 
+    public BigDecimal getLatitude() {
+        return latitude;
+    }
+
+    public BigDecimal getLongitude() {
+        return longitude;
+    }
+
     public String getCategorias() {
         return categorias;
+    }
+
+    public List<Long> getCategoriaIds() {
+        return categoriaIds;
+    }
+
+    public List<Categoria> getCategoriasVinculadas() {
+        return categoriasVinculadas;
     }
 
     public String getFacilidades() {
@@ -148,6 +180,10 @@ public class Academia {
 
     public String getStatusAcademia() {
         return statusAcademia;
+    }
+
+    public String getStatusAnteriorBloqueioGerente() {
+        return statusAnteriorBloqueioGerente;
     }
 
     public void setId(Long id) {
@@ -206,8 +242,24 @@ public class Academia {
         this.email = email;
     }
 
+    public void setLatitude(BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(BigDecimal longitude) {
+        this.longitude = longitude;
+    }
+
     public void setCategorias(String categorias) {
         this.categorias = categorias;
+    }
+
+    public void setCategoriaIds(List<Long> categoriaIds) {
+        this.categoriaIds = categoriaIds;
+    }
+
+    public void setCategoriasVinculadas(List<Categoria> categoriasVinculadas) {
+        this.categoriasVinculadas = categoriasVinculadas;
     }
 
     public void setFacilidades(String facilidades) {
@@ -228,5 +280,9 @@ public class Academia {
 
     public void setStatusAcademia(String statusAcademia) {
         this.statusAcademia = statusAcademia;
+    }
+
+    public void setStatusAnteriorBloqueioGerente(String statusAnteriorBloqueioGerente) {
+        this.statusAnteriorBloqueioGerente = statusAnteriorBloqueioGerente;
     }
 }

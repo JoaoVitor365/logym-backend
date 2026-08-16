@@ -14,10 +14,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import br.itb.projeto.logym.dto.UsuarioDTO;
+import br.itb.projeto.logym.model.entity.Academia;
 import br.itb.projeto.logym.model.entity.Usuario;
+import br.itb.projeto.logym.repository.AcademiaRepository;
+import br.itb.projeto.logym.repository.GerenteRepository;
 import br.itb.projeto.logym.repository.UsuarioRepository;
 
 @Service
@@ -25,12 +29,18 @@ public class UsuarioService implements UserDetailsService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final GerenteRepository gerenteRepository;
+    private final AcademiaRepository academiaRepository;
 
     public UsuarioService(
             UsuarioRepository usuarioRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            GerenteRepository gerenteRepository,
+            AcademiaRepository academiaRepository) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.gerenteRepository = gerenteRepository;
+        this.academiaRepository = academiaRepository;
     }
 
     /* ================= LOGIN ================= */
@@ -255,12 +265,15 @@ public class UsuarioService implements UserDetailsService {
 
     /* ================= INATIVAR ================= */
 
+    @Transactional
     public Usuario inativar(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         usuario.setStatusUsuario("INATIVO");
         usuario.setDataAtualizacao(LocalDateTime.now());
+
+        inativarGerenteEAcademias(usuario);
 
         return usuarioRepository.save(usuario);
     }
@@ -274,6 +287,7 @@ public class UsuarioService implements UserDetailsService {
      * - INATIVO deve ser usado quando o próprio usuário inativa a conta.
      * - SUSPENSO deve ser usado quando o ADMIN suspende a conta.
      */
+    @Transactional
     public Usuario suspender(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
@@ -281,17 +295,24 @@ public class UsuarioService implements UserDetailsService {
         usuario.setStatusUsuario("SUSPENSO");
         usuario.setDataAtualizacao(LocalDateTime.now());
 
+        suspenderGerenteEAcademias(usuario);
+
         return usuarioRepository.save(usuario);
     }
 
     /* ================= ATIVAR ================= */
 
+    @Transactional
     public Usuario ativar(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
+        String statusAnterior = usuario.getStatusUsuario();
+
         usuario.setStatusUsuario("ATIVO");
         usuario.setDataAtualizacao(LocalDateTime.now());
+
+        ativarGerenteEAcademias(usuario, statusAnterior);
 
         return usuarioRepository.save(usuario);
     }
@@ -330,6 +351,89 @@ public class UsuarioService implements UserDetailsService {
                 usuario.getFoto(),
                 usuario.getDataCadastro(),
                 usuario.getStatusUsuario());
+    }
+
+    private void inativarGerenteEAcademias(Usuario usuario) {
+        if (!"MANAGER".equals(usuario.getNivelAcesso())) {
+            return;
+        }
+
+        gerenteRepository.findByUsuarioId(usuario.getId())
+                .ifPresent(gerente -> {
+                    gerente.setStatusGerente("INATIVO");
+                    gerenteRepository.save(gerente);
+
+                    List<Academia> academias = academiaRepository.findByGerenteId(gerente.getId());
+
+                    academias.stream()
+                            .filter(academia -> "ATIVO".equals(academia.getStatusAcademia()))
+                            .forEach(academia -> {
+                                academia.setStatusAnteriorBloqueioGerente("ATIVO");
+                                academia.setStatusAcademia("INATIVO");
+                            });
+
+                    academiaRepository.saveAll(academias);
+                });
+    }
+
+    private void suspenderGerenteEAcademias(Usuario usuario) {
+        if (!"MANAGER".equals(usuario.getNivelAcesso())) {
+            return;
+        }
+
+        gerenteRepository.findByUsuarioId(usuario.getId())
+                .ifPresent(gerente -> {
+                    gerente.setStatusGerente("INATIVO");
+                    gerenteRepository.save(gerente);
+
+                    List<Academia> academias = academiaRepository.findByGerenteId(gerente.getId());
+
+                    academias.stream()
+                            .filter(academia -> "ATIVO".equals(academia.getStatusAcademia())
+                                    || "INATIVO".equals(academia.getStatusAcademia()))
+                            .forEach(academia -> {
+                                academia.setStatusAnteriorBloqueioGerente(academia.getStatusAcademia());
+                                academia.setStatusAcademia("SUSPENSA");
+                            });
+
+                    academiaRepository.saveAll(academias);
+                });
+    }
+
+    private void ativarGerenteEAcademias(Usuario usuario, String statusAnterior) {
+        if (!"MANAGER".equals(usuario.getNivelAcesso())) {
+            return;
+        }
+
+        gerenteRepository.findByUsuarioId(usuario.getId())
+                .ifPresent(gerente -> {
+                    gerente.setStatusGerente("ATIVO");
+                    gerenteRepository.save(gerente);
+
+                    List<Academia> academias = academiaRepository.findByGerenteId(gerente.getId());
+
+                    if ("INATIVO".equals(statusAnterior)) {
+                        academias.stream()
+                                .filter(academia -> "INATIVO".equals(academia.getStatusAcademia()))
+                                .filter(academia -> academia.getStatusAnteriorBloqueioGerente() != null)
+                                .forEach(academia -> {
+                                    academia.setStatusAcademia(academia.getStatusAnteriorBloqueioGerente());
+                                    academia.setStatusAnteriorBloqueioGerente(null);
+                                });
+                    }
+
+                    if ("SUSPENSO".equals(statusAnterior)) {
+                        academias.stream()
+                                .filter(academia -> "SUSPENSA".equals(academia.getStatusAcademia()))
+                                .filter(academia -> academia.getStatusAnteriorBloqueioGerente() != null)
+                                .forEach(academia -> {
+                                    academia.setStatusAcademia(academia.getStatusAnteriorBloqueioGerente());
+                                    academia.setStatusAnteriorBloqueioGerente(null);
+                                });
+                    }
+
+                    academiaRepository.saveAll(academias);
+                });
     }
 
     private String limparCep(String cep) {
