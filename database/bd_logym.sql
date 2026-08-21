@@ -29,6 +29,7 @@ SELECT * FROM Categoria
 SELECT * FROM CategoriaAcademia
 SELECT * FROM Facilidade;
 SELECT * FROM FacilidadeAcademia;
+SELECT * FROM RecuperarSenha
 ----------------- FIM SELECTS -----------------
 */
 
@@ -282,6 +283,19 @@ CREATE TABLE ItemAvaliacaoAcademia (
 );
 GO
 
+CREATE TABLE RecuperarSenha
+( 
+   id				INT				IDENTITY,
+   email			VARCHAR(254)	NOT NULL, -- username
+   codigo			CHAR(6)			NOT NULL,
+   geradoEm			SMALLDATETIME	NOT NULL DEFAULT GETDATE(),
+   expiraEm		    SMALLDATETIME	NOT NULL,
+   statusCodigo	    BIT				NOT NULL DEFAULT 1, -- 1 = ATIVO ou 0 = INATIVO
+ 
+   PRIMARY KEY (id)
+);
+GO
+
 ----------------- INSERTS DE USUÁRIOS -----------------
 
 -- USUÁRIO nivelAcesso=ADMIN
@@ -362,6 +376,7 @@ SELECT * FROM Categoria
 SELECT * FROM CategoriaAcademia
 SELECT * FROM Facilidade;
 SELECT * FROM FacilidadeAcademia;
+SELECT * FROM RecuperarSenha
 ----------------- FIM SELECTS -----------------
 */
 
@@ -871,29 +886,5 @@ SELECT * FROM Categoria
 SELECT * FROM CategoriaAcademia
 SELECT * FROM Facilidade;
 SELECT * FROM FacilidadeAcademia;
+SELECT * FROM RecuperarSenha
 ----------------- FIM SELECTS -----------------
-
-
------------------ VERIFICAÇÕES RÁPIDAS -----------------
--- Deve retornar 0 linhas: academias fictícias sem vínculos de categoria.
-SELECT a.id, a.nome
-FROM Academia a
-WHERE a.categorias IS NOT NULL
-  AND NOT EXISTS (
-      SELECT 1 FROM CategoriaAcademia ca WHERE ca.academia_id = a.id
-  );
-
--- Deve retornar 0 linhas: academias fictícias sem vínculos de facilidade.
-SELECT a.id, a.nome
-FROM Academia a
-WHERE a.facilidades IS NOT NULL
-  AND NOT EXISTS (
-      SELECT 1 FROM FacilidadeAcademia fa WHERE fa.academia_id = a.id
-  );
-
--- Conferência dos novos campos da Academia.
-SELECT id, nome, latitude, longitude, statusAcademia, statusAnteriorBloqueioGerente
-FROM Academia
-ORDER BY id;
------------------ FIM VERIFICAÇÕES RÁPIDAS -----------------
-
