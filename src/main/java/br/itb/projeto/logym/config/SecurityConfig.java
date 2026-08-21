@@ -41,6 +41,10 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/create").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/login").permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/recuperar-senha/solicitar-codigo",
+                                "/recuperar-senha/validar-codigo",
+                                "/recuperar-senha/redefinir-senha").permitAll()
 
                         // Academias
                         .requestMatchers(HttpMethod.GET, "/academias", "/academias/", "/academias/*").permitAll()

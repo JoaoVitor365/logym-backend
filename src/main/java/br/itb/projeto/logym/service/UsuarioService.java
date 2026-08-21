@@ -29,16 +29,19 @@ public class UsuarioService implements UserDetailsService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SenhaService senhaService;
     private final GerenteRepository gerenteRepository;
     private final AcademiaRepository academiaRepository;
 
     public UsuarioService(
             UsuarioRepository usuarioRepository,
             PasswordEncoder passwordEncoder,
+            SenhaService senhaService,
             GerenteRepository gerenteRepository,
             AcademiaRepository academiaRepository) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.senhaService = senhaService;
         this.gerenteRepository = gerenteRepository;
         this.academiaRepository = academiaRepository;
     }
@@ -144,6 +147,8 @@ public class UsuarioService implements UserDetailsService {
         if (usuario.getPassword() == null || usuario.getPassword().trim().isEmpty()) {
             throw new RuntimeException("A senha é obrigatória.");
         }
+
+        senhaService.validarSenha(usuario.getPassword());
 
         String usernameNormalizado = normalizarUsername(usuario.getUsername());
 
@@ -256,6 +261,7 @@ public class UsuarioService implements UserDetailsService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
+        senhaService.validarSenha(novaSenha);
         usuario.setPassword(passwordEncoder.encode(novaSenha));
         usuario.setStatusUsuario("ATIVO");
         usuario.setDataAtualizacao(LocalDateTime.now());
