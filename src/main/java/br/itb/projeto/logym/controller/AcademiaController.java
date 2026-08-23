@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import br.itb.projeto.logym.model.entity.Academia;
@@ -35,8 +36,10 @@ public class AcademiaController {
     }
 
     @GetMapping("/gerente/{gerenteId}")
-    public ResponseEntity<List<Academia>> findByGerenteId(@PathVariable Long gerenteId) {
-        return ResponseEntity.ok(academiaService.findByGerenteId(gerenteId));
+    public ResponseEntity<List<Academia>> findByGerenteId(
+            @PathVariable Long gerenteId,
+            Authentication authentication) {
+        return ResponseEntity.ok(academiaService.findByGerenteId(gerenteId, authentication));
     }
 
     @GetMapping("/proximas/usuario/{usuarioId}")
@@ -46,24 +49,29 @@ public class AcademiaController {
     }
 
     @PostMapping({ "", "/" })
-    public ResponseEntity<Academia> create(@RequestBody Academia academia) {
-        Academia novaAcademia = academiaService.create(academia);
+    public ResponseEntity<Academia> create(
+            @RequestBody Academia academia,
+            Authentication authentication) {
+        Academia novaAcademia = academiaService.create(academia, authentication);
         return ResponseEntity.status(HttpStatus.CREATED).body(novaAcademia);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Academia> update(
             @PathVariable Long id,
-            @RequestBody Academia academia) {
-        return ResponseEntity.ok(academiaService.update(id, academia));
+            @RequestBody Academia academia,
+            Authentication authentication) {
+        return ResponseEntity.ok(academiaService.update(id, academia, authentication));
     }
 
     /**
      * Fluxo do GERENTE: inativa a própria academia.
      */
     @PutMapping("/{id}/inativar")
-    public ResponseEntity<Academia> inativar(@PathVariable Long id) {
-        return ResponseEntity.ok(academiaService.inativar(id));
+    public ResponseEntity<Academia> inativar(
+            @PathVariable Long id,
+            Authentication authentication) {
+        return ResponseEntity.ok(academiaService.inativar(id, authentication));
     }
 
     /**
@@ -71,8 +79,10 @@ public class AcademiaController {
      * Se estiver SUSPENSA, o service bloqueia.
      */
     @PutMapping("/{id}/reativar")
-    public ResponseEntity<Academia> reativar(@PathVariable Long id) {
-        Academia academia = academiaService.reativar(id);
+    public ResponseEntity<Academia> reativar(
+            @PathVariable Long id,
+            Authentication authentication) {
+        Academia academia = academiaService.reativar(id, authentication);
         return ResponseEntity.ok(academia);
     }
 

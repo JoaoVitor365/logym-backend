@@ -33,6 +33,8 @@ public class RecuperarSenhaController {
         } catch (EmailEnvioException e) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body(Map.of("message", "Nao foi possivel enviar o codigo de recuperacao. Tente novamente mais tarde."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 

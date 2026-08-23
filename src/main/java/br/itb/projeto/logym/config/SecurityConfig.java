@@ -41,12 +41,21 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/create").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/usuarios/verificar-status-login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/usuarios/all").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/usuarios/*/suspender", "/usuarios/*/ativar").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,
                                 "/recuperar-senha/solicitar-codigo",
                                 "/recuperar-senha/validar-codigo",
                                 "/recuperar-senha/redefinir-senha").permitAll()
 
                         // Academias
+                        .requestMatchers("/academias/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/academias/gerente/*").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/academias", "/academias/").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/academias/*").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/academias/*/inativar", "/academias/*/reativar")
+                        .hasRole("MANAGER")
                         .requestMatchers(HttpMethod.GET, "/academias", "/academias/", "/academias/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/academias/proximas/usuario/*").permitAll()
                         .requestMatchers("/categorias/admin/**").hasRole("ADMIN")
@@ -54,29 +63,15 @@ public class SecurityConfig {
                         .requestMatchers("/facilidades/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/facilidades", "/facilidades/", "/facilidades/ativas").permitAll()
                         // Usuário / perfil / foto
-                        .requestMatchers(HttpMethod.GET, "/usuarios/*").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/usuarios/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/usuarios/*/foto").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/usuarios/*/foto").permitAll()
-
                         // Avaliações
+                        .requestMatchers("/avaliacoes/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/avaliacoes/itens").permitAll()
                         .requestMatchers(HttpMethod.GET, "/avaliacoes/academia/*").permitAll()
-                        // Permite o Mobile cadastrar avaliação.
-                        .requestMatchers(HttpMethod.POST, "/avaliacoes").permitAll()
-                        
-                        // Permite o Mobile excluir/inativar avaliação igual ao Web.
-                        // Rota:
-                        // PUT /avaliacoes/{avaliacaoId}/inativar?usuarioId={usuarioId}
-                        .requestMatchers(HttpMethod.PUT, "/avaliacoes/*/inativar").permitAll()
                         // Fotos das academias
+                        .requestMatchers(HttpMethod.POST, "/fotos-academia/*").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/fotos-academia/*/inativar").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.GET, "/fotos-academia/academia/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/fotos-academia/*/imagem").permitAll()
-
-                        // Favoritos
-                        .requestMatchers(HttpMethod.GET, "/favoritos/usuario/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/favoritos/usuario/*/academia/*").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/favoritos/toggle").permitAll()
 
                         .anyRequest().authenticated())
                 .formLogin(form -> form

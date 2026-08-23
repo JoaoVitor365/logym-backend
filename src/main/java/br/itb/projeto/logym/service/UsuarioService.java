@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import br.itb.projeto.logym.dto.UsuarioDTO;
 import br.itb.projeto.logym.model.entity.Academia;
@@ -158,9 +160,7 @@ public class UsuarioService implements UserDetailsService {
 
         Usuario novoUsuario = new Usuario();
 
-        String nivelAcesso = usuario.getNivelAcesso() == null
-                ? "USER"
-                : usuario.getNivelAcesso();
+        String nivelAcesso = "USER";
 
         novoUsuario.setNome(usuario.getNome().trim());
         novoUsuario.setUsername(usernameNormalizado);
@@ -347,6 +347,23 @@ public class UsuarioService implements UserDetailsService {
         return toDTO(usuario);
     }
 
+    public void validarProprietario(Long id, Authentication authentication) {
+        Usuario usuarioAutenticado = buscarUsuarioAutenticado(authentication);
+
+        if (!usuarioAutenticado.getId().equals(id)) {
+            throw acessoNegado();
+        }
+    }
+
+    public void validarLeituraUsuario(Long id, Authentication authentication) {
+        if (authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()))) {
+            return;
+        }
+
+        validarProprietario(id, authentication);
+    }
+
     private UsuarioDTO toDTO(Usuario usuario) {
         return new UsuarioDTO(
                 usuario.getId(),
@@ -357,6 +374,20 @@ public class UsuarioService implements UserDetailsService {
                 usuario.getFoto(),
                 usuario.getDataCadastro(),
                 usuario.getStatusUsuario());
+    }
+
+    private Usuario buscarUsuarioAutenticado(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            throw acessoNegado();
+        }
+
+        return usuarioRepository.findByUsername(normalizarUsername(authentication.getName()))
+                .orElseThrow(this::acessoNegado);
+    }
+
+    private ResponseStatusException acessoNegado() {
+        return new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
     }
 
     private void inativarGerenteEAcademias(Usuario usuario) {

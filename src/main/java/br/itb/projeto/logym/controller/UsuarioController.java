@@ -61,7 +61,10 @@ public class UsuarioController {
     public ResponseEntity<Usuario> editar(
             @PathVariable Long id,
             @RequestPart(required = false) MultipartFile file,
-            @RequestPart Usuario usuario) {
+            @RequestPart Usuario usuario,
+            Authentication authentication) {
+
+        usuarioService.validarProprietario(id, authentication);
 
         Usuario usuarioAtualizado = usuarioService.editar(file, id, usuario);
         return ResponseEntity.ok(usuarioAtualizado);
@@ -75,7 +78,10 @@ public class UsuarioController {
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Usuario> editarJson(
             @PathVariable Long id,
-            @RequestBody Usuario usuario) {
+            @RequestBody Usuario usuario,
+            Authentication authentication) {
+
+        usuarioService.validarProprietario(id, authentication);
 
         Usuario usuarioAtualizado = usuarioService.editar(null, id, usuario);
         return ResponseEntity.ok(usuarioAtualizado);
@@ -93,7 +99,10 @@ public class UsuarioController {
     @PutMapping(value = "/{id}/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> atualizarFoto(
             @PathVariable Long id,
-            @RequestParam("file") MultipartFile file) {
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication) {
+
+        usuarioService.validarProprietario(id, authentication);
 
         usuarioService.atualizarFoto(id, file);
 
@@ -107,14 +116,21 @@ public class UsuarioController {
     @PutMapping("/{id}/alterar-senha")
     public ResponseEntity<Usuario> alterarSenha(
             @PathVariable Long id,
-            @RequestParam String novaSenha) {
+            @RequestParam String novaSenha,
+            Authentication authentication) {
+
+        usuarioService.validarProprietario(id, authentication);
 
         Usuario usuario = usuarioService.alterarSenha(id, novaSenha);
         return ResponseEntity.ok(usuario);
     }
 
     @PutMapping("/{id}/inativar")
-    public ResponseEntity<Usuario> inativar(@PathVariable Long id) {
+    public ResponseEntity<Usuario> inativar(
+            @PathVariable Long id,
+            Authentication authentication) {
+        usuarioService.validarProprietario(id, authentication);
+
         Usuario usuario = usuarioService.inativar(id);
         return ResponseEntity.ok(usuario);
     }
@@ -143,7 +159,11 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<UsuarioDTO> findById(
+            @PathVariable Long id,
+            Authentication authentication) {
+        usuarioService.validarLeituraUsuario(id, authentication);
+
         return ResponseEntity.ok(usuarioService.findById(id));
     }
 
@@ -153,7 +173,11 @@ public class UsuarioController {
      * Essa rota já era usada pelo Web e pelo Mobile para exibir a foto.
      */
     @GetMapping("/{id}/foto")
-    public ResponseEntity<byte[]> getFoto(@PathVariable Long id) {
+    public ResponseEntity<byte[]> getFoto(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        usuarioService.validarLeituraUsuario(id, authentication);
 
         UsuarioDTO usuario = usuarioService.findById(id);
 

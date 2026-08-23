@@ -49,7 +49,19 @@ public class RecuperarSenhaService {
 
         Usuario usuario = usuarioRepository.findByUsername(emailNormalizado).orElse(null);
 
-        if (usuario == null || !usuarioPodeRecuperarSenha(usuario)) {
+        if (usuario == null) {
+            throw new IllegalArgumentException("E-mail não encontrado. Verifique o endereço informado.");
+        }
+
+        if ("INATIVO".equals(usuario.getStatusUsuario())) {
+            throw new IllegalArgumentException("Sua conta está inativa. Entre em contato com o suporte.");
+        }
+
+        if ("SUSPENSO".equals(usuario.getStatusUsuario())) {
+            throw new IllegalArgumentException("Sua conta está suspensa. Entre em contato com o suporte.");
+        }
+
+        if (!usuarioPodeRecuperarSenha(usuario)) {
             return MENSAGEM_SOLICITACAO;
         }
 
@@ -76,6 +88,11 @@ public class RecuperarSenhaService {
             throw new EmailEnvioException("Nao foi possivel enviar o codigo de recuperacao.", e);
         }
 
+        if ("ATIVO".equals(usuario.getStatusUsuario())) {
+            usuario.setStatusUsuario("TROCAR_SENHA");
+            usuarioRepository.save(usuario);
+        }
+
         return MENSAGEM_SOLICITACAO;
     }
 
@@ -98,6 +115,11 @@ public class RecuperarSenhaService {
         senhaService.validarSenha(novaSenha);
         usuario.setPassword(passwordEncoder.encode(novaSenha));
         usuario.setDataAtualizacao(LocalDateTime.now());
+
+        if ("TROCAR_SENHA".equals(usuario.getStatusUsuario())) {
+            usuario.setStatusUsuario("ATIVO");
+        }
+
         usuarioRepository.save(usuario);
 
         recuperarSenha.setStatusCodigo(false);

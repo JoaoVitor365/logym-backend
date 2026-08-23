@@ -11,8 +11,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import br.itb.projeto.logym.dto.AvaliacaoDTO;
 import br.itb.projeto.logym.dto.AvaliacaoPorItensRequestDTO;
@@ -62,7 +65,13 @@ public class AvaliacaoService {
     }
 
     @Transactional
-    public AvaliacaoDTO avaliarPorItens(Long usuarioId, Long academiaId, AvaliacaoPorItensRequestDTO request) {
+    public AvaliacaoDTO avaliarPorItens(
+            Long usuarioId,
+            Long academiaId,
+            AvaliacaoPorItensRequestDTO request,
+            Authentication authentication) {
+        usuarioId = buscarUsuarioElegivel(authentication).getId();
+
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
@@ -127,16 +136,21 @@ public class AvaliacaoService {
     /**
      * Lista avaliações públicas de uma academia.
      * Retorna avaliações ATIVAS para todos.
-     * Se usuarioId for informado, inclui também a avaliação SUSPENSA daquele usuário,
-     * para que ele veja o aviso de suspensão da própria avaliação.
+     * Se usuarioId for informado pelo próprio usuário autenticado, inclui também a
+     * avaliação SUSPENSA para que ele veja o aviso de suspensão.
      */
-    public List<AvaliacaoDTO> findByAcademiaId(Long academiaId, Long usuarioId) {
+    public List<AvaliacaoDTO> findByAcademiaId(
+            Long academiaId,
+            Long usuarioId,
+            Authentication authentication) {
         List<Avaliacao> avaliacoesAtivas = avaliacaoRepository
                 .findByAcademiaIdAndStatusAvaliacaoOrderByDataCadastroDesc(academiaId, "ATIVO");
 
         List<Avaliacao> resultado = new ArrayList<>(avaliacoesAtivas);
 
         if (usuarioId != null) {
+            validarUsuarioSolicitado(usuarioId, authentication);
+
             avaliacaoRepository.findByUsuarioIdAndAcademiaId(usuarioId, academiaId)
                     .ifPresent(avaliacaoDoUsuario -> {
                         boolean jaIncluida = resultado.stream()
@@ -161,12 +175,14 @@ public class AvaliacaoService {
     }
 
     @Transactional
-    public void inativar(Long avaliacaoId, Long usuarioId) {
+    public void inativar(Long avaliacaoId, Long usuarioId, Authentication authentication) {
+        usuarioId = buscarUsuarioElegivel(authentication).getId();
+
         Avaliacao avaliacao = avaliacaoRepository.findById(avaliacaoId)
                 .orElseThrow(() -> new RuntimeException("Avaliação não encontrada."));
 
         if (!avaliacao.getUsuario().getId().equals(usuarioId)) {
-            throw new RuntimeException("Você só pode remover sua própria avaliação.");
+            throw acessoNegado();
         }
 
         if ("SUSPENSA".equals(avaliacao.getStatusAvaliacao())) {
@@ -319,6 +335,38 @@ public class AvaliacaoService {
         }
 
         academiaRepository.save(academia);
+    }
+
+    private Usuario buscarUsuarioElegivel(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            throw acessoNegado();
+        }
+
+        Usuario usuario = usuarioRepository.findByUsername(normalizarUsername(authentication.getName()))
+                .orElseThrow(this::acessoNegado);
+
+        if (!"USER".equals(usuario.getNivelAcesso()) || !"ATIVO".equals(usuario.getStatusUsuario())) {
+            throw acessoNegado();
+        }
+
+        return usuario;
+    }
+
+    private void validarUsuarioSolicitado(Long usuarioId, Authentication authentication) {
+        Usuario usuarioAutenticado = buscarUsuarioElegivel(authentication);
+
+        if (!usuarioAutenticado.getId().equals(usuarioId)) {
+            throw acessoNegado();
+        }
+    }
+
+    private String normalizarUsername(String username) {
+        return username == null ? null : username.trim().toLowerCase();
+    }
+
+    private ResponseStatusException acessoNegado() {
+        return new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
     }
 
     private AvaliacaoDTO toDTO(Avaliacao avaliacao) {

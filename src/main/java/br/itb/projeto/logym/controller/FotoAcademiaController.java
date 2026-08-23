@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,9 +25,10 @@ public class FotoAcademiaController {
     @PostMapping("/{academiaId}")
     public ResponseEntity<FotoAcademiaDTO> salvar(
             @PathVariable Long academiaId,
-            @RequestParam("foto") MultipartFile foto
+            @RequestParam("foto") MultipartFile foto,
+            Authentication authentication
     ) {
-        return ResponseEntity.ok(fotoAcademiaService.salvar(academiaId, foto));
+        return ResponseEntity.ok(fotoAcademiaService.salvar(academiaId, foto, authentication));
     }
 
     @GetMapping("/academia/{academiaId}")
@@ -45,8 +47,10 @@ public class FotoAcademiaController {
     }
 
     @PutMapping("/{fotoId}/inativar")
-    public ResponseEntity<Void> inativar(@PathVariable Long fotoId) {
-        fotoAcademiaService.inativar(fotoId);
+    public ResponseEntity<Void> inativar(
+            @PathVariable Long fotoId,
+            Authentication authentication) {
+        fotoAcademiaService.inativar(fotoId, authentication);
         return ResponseEntity.noContent().build();
     }
 }

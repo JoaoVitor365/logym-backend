@@ -10,8 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import br.itb.projeto.logym.model.entity.Academia;
 import br.itb.projeto.logym.model.entity.Categoria;
@@ -70,7 +73,9 @@ public class AcademiaService {
         return carregarCategoriasVinculadas(academiaRepository.findAll());
     }
 
-    public List<Academia> findByGerenteId(Long gerenteId) {
+    public List<Academia> findByGerenteId(Long gerenteId, Authentication authentication) {
+        validarGerenteSolicitado(gerenteId, authentication);
+
         return carregarCategoriasVinculadas(academiaRepository.findByGerenteId(gerenteId));
     }
 
@@ -103,7 +108,8 @@ public class AcademiaService {
     }
 
     @Transactional
-    public Academia create(Academia academia) {
+    public Academia create(Academia academia, Authentication authentication) {
+        Gerente gerente = buscarGerenteElegivel(authentication);
 
         if (!DocumentoValidator.isValidCNPJ(academia.getCnpj())) {
             throw new RuntimeException("CNPJ invalido.");
@@ -113,16 +119,10 @@ public class AcademiaService {
         academia.setCep(limparCep(academia.getCep()));
         validarCoordenadas(academia.getLatitude(), academia.getLongitude());
 
-        if (academia.getGerente() == null || academia.getGerente().getId() == null) {
-            throw new RuntimeException("Gerente nao informado.");
-        }
-
-        Gerente gerente = gerenteRepository.findById(academia.getGerente().getId())
-                .orElseThrow(() -> new RuntimeException("Gerente nao encontrado."));
-
         academia.setGerente(gerente);
         academia.setDataCadastro(LocalDateTime.now());
         academia.setStatusAcademia("ATIVO");
+        academia.setStatusAnteriorBloqueioGerente(null);
 
         // Academia nova ainda nao possui avaliacoes.
         // Por isso a nota deve comecar como NULL no banco.
@@ -149,15 +149,15 @@ public class AcademiaService {
     }
 
     @Transactional
-    public Academia update(Long id, Academia dadosAtualizados) {
+    public Academia update(Long id, Academia dadosAtualizados, Authentication authentication) {
+        Academia academia = findById(id);
+        validarPropriedadeAcademia(academia, authentication);
 
         if (!DocumentoValidator.isValidCNPJ(dadosAtualizados.getCnpj())) {
             throw new RuntimeException("CNPJ invalido.");
         }
 
         dadosAtualizados.setCnpj(dadosAtualizados.getCnpj().replaceAll("\\D", ""));
-
-        Academia academia = findById(id);
 
         academia.setNome(dadosAtualizados.getNome());
         academia.setCnpj(dadosAtualizados.getCnpj());
@@ -202,8 +202,9 @@ public class AcademiaService {
     /**
      * Fluxo do gerente: quando o proprio gerente inativa a academia.
      */
-    public Academia inativar(Long id) {
+    public Academia inativar(Long id, Authentication authentication) {
         Academia academia = findById(id);
+        validarPropriedadeAcademia(academia, authentication);
 
         if ("SUSPENSA".equals(academia.getStatusAcademia())) {
             throw new RuntimeException("Esta academia foi suspensa pela administracao. Entre em contato com o suporte para reativar.");
@@ -218,8 +219,9 @@ public class AcademiaService {
      * Fluxo do gerente: gerente so pode reativar academias INATIVAS.
      * Academia SUSPENSA so pode ser reativada pelo ADMIN.
      */
-    public Academia reativar(Long id) {
+    public Academia reativar(Long id, Authentication authentication) {
         Academia academia = findById(id);
+        validarPropriedadeAcademia(academia, authentication);
 
         if ("SUSPENSA".equals(academia.getStatusAcademia())) {
             throw new RuntimeException("Esta academia foi suspensa pela administracao. Entre em contato com o suporte para reativar.");
@@ -248,6 +250,54 @@ public class AcademiaService {
         academia.setStatusAcademia("ATIVO");
 
         return academiaRepository.save(academia);
+    }
+
+    private void validarGerenteSolicitado(Long gerenteId, Authentication authentication) {
+        Gerente gerenteAutenticado = buscarGerenteElegivel(authentication);
+
+        if (!gerenteAutenticado.getId().equals(gerenteId)) {
+            throw acessoNegado();
+        }
+    }
+
+    private void validarPropriedadeAcademia(Academia academia, Authentication authentication) {
+        Gerente gerenteAutenticado = buscarGerenteElegivel(authentication);
+
+        if (academia.getGerente() == null
+                || !gerenteAutenticado.getId().equals(academia.getGerente().getId())) {
+            throw acessoNegado();
+        }
+    }
+
+    private Gerente buscarGerenteElegivel(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            throw acessoNegado();
+        }
+
+        Usuario usuario = usuarioRepository.findByUsername(normalizarUsername(authentication.getName()))
+                .orElseThrow(this::acessoNegado);
+
+        if (!"MANAGER".equals(usuario.getNivelAcesso()) || !"ATIVO".equals(usuario.getStatusUsuario())) {
+            throw acessoNegado();
+        }
+
+        Gerente gerente = gerenteRepository.findByUsuarioId(usuario.getId())
+                .orElseThrow(this::acessoNegado);
+
+        if (!"ATIVO".equals(gerente.getStatusGerente())) {
+            throw acessoNegado();
+        }
+
+        return gerente;
+    }
+
+    private String normalizarUsername(String username) {
+        return username == null ? null : username.trim().toLowerCase();
+    }
+
+    private ResponseStatusException acessoNegado() {
+        return new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
     }
 
     private List<Academia> carregarCategoriasVinculadas(List<Academia> academias) {

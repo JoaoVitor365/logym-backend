@@ -3,6 +3,7 @@ package br.itb.projeto.logym.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,8 +36,9 @@ public class AvaliacaoController {
     @GetMapping("/academia/{academiaId}")
     public ResponseEntity<List<AvaliacaoDTO>> findByAcademiaId(
             @PathVariable Long academiaId,
-            @RequestParam(required = false) Long usuarioId) {
-        return ResponseEntity.ok(avaliacaoService.findByAcademiaId(academiaId, usuarioId));
+            @RequestParam(required = false) Long usuarioId,
+            Authentication authentication) {
+        return ResponseEntity.ok(avaliacaoService.findByAcademiaId(academiaId, usuarioId, authentication));
     }
 
     @GetMapping("/admin/all")
@@ -48,17 +50,19 @@ public class AvaliacaoController {
     public ResponseEntity<AvaliacaoDTO> avaliar(
             @RequestParam Long usuarioId,
             @RequestParam Long academiaId,
-            @RequestBody AvaliacaoPorItensRequestDTO avaliacao
+            @RequestBody AvaliacaoPorItensRequestDTO avaliacao,
+            Authentication authentication
     ) {
-        return ResponseEntity.ok(avaliacaoService.avaliarPorItens(usuarioId, academiaId, avaliacao));
+        return ResponseEntity.ok(avaliacaoService.avaliarPorItens(usuarioId, academiaId, avaliacao, authentication));
     }
 
     @PutMapping("/{avaliacaoId}/inativar")
     public ResponseEntity<Void> inativar(
             @PathVariable Long avaliacaoId,
-            @RequestParam Long usuarioId
+            @RequestParam Long usuarioId,
+            Authentication authentication
     ) {
-        avaliacaoService.inativar(avaliacaoId, usuarioId);
+        avaliacaoService.inativar(avaliacaoId, usuarioId, authentication);
         return ResponseEntity.noContent().build();
     }
 
