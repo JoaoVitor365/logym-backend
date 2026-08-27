@@ -17,10 +17,10 @@ public class EmailService {
         SimpleMailMessage mensagem = new SimpleMailMessage();
         mensagem.setTo(destino);
         mensagem.setSubject("Recuperacao de senha - LOGYM");
-        mensagem.setText("Voce solicitou a recuperacao de senha do LOGYM.\n\n"
-                + "Codigo de recuperacao: " + codigo + "\n"
-                + "Este codigo e valido por 15 minutos.\n\n"
-                + "Se voce nao solicitou esta recuperacao, ignore este e-mail.");
+        mensagem.setText("Você solicitou a recuperação de senha do LOGYM.\n\n"
+                + "Código de recuperação: " + codigo + "\n"
+                + "Este código é válido por 15 minutos.\n\n"
+                + "Se você não solicitou esta recuperação, ignore este e-mail.");
         javaMailSender.send(mensagem);
     }
 }

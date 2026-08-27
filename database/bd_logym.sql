@@ -298,25 +298,51 @@ GO
 
 ----------------- INSERTS DE USUÁRIOS -----------------
 
--- USUÁRIO nivelAcesso=ADMIN
+---- USUÁRIO nivelAcesso=ADMIN
 INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario)
 VALUES ('Admin', 'admin@logym.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'ADMIN', NULL, NULL, GETDATE(), NULL, 'ATIVO');
---                                   123123
+----                                        123123
 
--- USUÁRIO nivelAcesso=USER
-INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario)
-VALUES ('João Vitor', 'joaovitor@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06401050', NULL, GETDATE(), NULL, 'ATIVO');
---                                            123123
 
--- USUÁRIO nivelAcesso=MANAGER
+
+---- USUÁRIO nivelAcesso=MANAGER
 INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario)
 VALUES ('João Pedro', 'joaopedro@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'MANAGER', NULL, NULL, GETDATE(), NULL, 'ATIVO');
---                                            123123
+--                                                  123123
+INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario) 
+VALUES ('Rodrigo Wagner', 'rodrigowagner@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'MANAGER', NULL, NULL, GETDATE(), NULL, 'ATIVO');
+--                                                          123123
 
--- GERENTE
+
+
+---- GERENTE
 INSERT Gerente (nome, cpf, telefone, dataNascimento, usuario_id, dataCadastro, statusGerente)
-VALUES ('João Pedro', '99202457042', '(11) 99999-8888', '2000-04-04', 3, GETDATE(), 'ATIVO');
+VALUES ('João Pedro', '99202457042', '(11) 99999-8888', '2000-04-04', 2, GETDATE(), 'ATIVO');
 --
+INSERT Gerente (nome, cpf, telefone, dataNascimento, usuario_id, dataCadastro, statusGerente) 
+VALUES ('Rodrigo Wagner', '48372619573', '(11) 98888-4545', '1981-08-24', 3, GETDATE(), 'ATIVO');
+----
+
+
+
+---- USUÁRIO nivelAcesso=USER
+INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario)
+VALUES ('João Vitor', 'joaovitor@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06401050', NULL, GETDATE(), NULL, 'ATIVO');
+--                                                  123123
+INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario) 
+VALUES ('Mariana Costa', 'marianacosta@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06401050', NULL, GETDATE(), NULL, 'ATIVO');
+--
+INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario) 
+VALUES ('Lucas Ferreira', 'lucasferreira@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06449300', NULL, GETDATE(), NULL, 'ATIVO');
+--
+INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario) 
+VALUES ('Camila Rodrigues', 'camilarodrigues@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06440180', NULL, GETDATE(), NULL, 'ATIVO');
+--
+INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario) 
+VALUES ('Rafael Almeida', 'rafaelalmeida@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06455000', NULL, GETDATE(), NULL, 'ATIVO');
+----
+
+
 
 ----------------- FIM INSERTS DE USUÁRIOS -----------------
 
@@ -361,6 +387,8 @@ VALUES
 ('Nutricionista', 'Possui atendimento ou acompanhamento nutricional disponível.', 'ATIVO'),
 ('Loja de Suplementos', 'Possui venda de suplementos ou produtos relacionados à atividade física.', 'ATIVO');
 ----------------- FIM INSERTS FACILIDADES  -----------------
+
+
 
 /*
 ----------------- SELECTS -----------------
@@ -531,7 +559,7 @@ VALUES
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
-    1,
+    2,
     GETDATE(),
     'ATIVO'
 ),
@@ -552,7 +580,7 @@ VALUES
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
-    1,
+    2,
     GETDATE(),
     'ATIVO'
 ),
@@ -657,7 +685,7 @@ VALUES
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
-    1,
+    2,
     GETDATE(),
     'ATIVO'
 ),
@@ -678,7 +706,7 @@ VALUES
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
-    1,
+    2,
     GETDATE(),
     'ATIVO'
 ),
@@ -699,7 +727,7 @@ VALUES
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
-    1,
+    2,
     GETDATE(),
     'ATIVO'
 ),
@@ -720,7 +748,7 @@ VALUES
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
-    1,
+    2,
     GETDATE(),
     'ATIVO'
 ),
@@ -826,6 +854,69 @@ VALUES
     'Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
     1,
+    GETDATE(),
+    'ATIVO'
+),
+(
+    'Bluefit Carapicuíba',
+    '90100021000171',
+    'Academia da rede Bluefit localizada em Carapicuíba, com estrutura completa para musculação, treinos funcionais e aulas coletivas.',
+    '06382260',
+    'Estrada Ernestina Vieira',
+    149,
+    '1º Piso',
+    'Vila Dirce',
+    'Carapicuíba',
+    'SP',
+    '(11) 4002-1021',
+    '(11) 99999-1021',
+    'bluefit.carapicuiba@logym.com',
+    'Musculação, Funcional, Lutas, Spinning',
+    'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
+    NULL,
+    2,
+    GETDATE(),
+    'ATIVO'
+),
+(
+    'Bluefit Cotia',
+    '90100022000116',
+    'Academia da rede Bluefit localizada em Cotia, oferecendo estrutura para musculação, exercícios funcionais e atividades coletivas.',
+    '06717210',
+    'Avenida Nossa Senhora de Fátima',
+    558,
+    NULL,
+    'Jardim Monte Santo',
+    'Cotia',
+    'SP',
+    '(11) 4002-1022',
+    '(11) 99999-1022',
+    'bluefit.cotia@logym.com',
+    'Musculação, Funcional, Lutas, Spinning',
+    'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
+    NULL,
+    2,
+    GETDATE(),
+    'ATIVO'
+),
+(
+    'Bluefit Granja Viana',
+    '90100023000160',
+    'Academia da rede Bluefit localizada na região da Granja Viana, em Cotia, com ampla estrutura para diferentes modalidades de treino.',
+    '06709150',
+    'Avenida São Camilo',
+    1066,
+    NULL,
+    'Granja Viana',
+    'Cotia',
+    'SP',
+    '(11) 4002-1023',
+    '(11) 99999-1023',
+    'bluefit.granjaviana@logym.com',
+    'Musculação, Funcional, Lutas, Spinning',
+    'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
+    NULL,
+    2,
     GETDATE(),
     'ATIVO'
 );
