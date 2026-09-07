@@ -3,10 +3,14 @@ package br.itb.projeto.logym.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import br.itb.projeto.logym.dto.AcademiaProximaDTO;
+import br.itb.projeto.logym.dto.AcademiaComparacaoDTO;
 import br.itb.projeto.logym.model.entity.Academia;
 import br.itb.projeto.logym.service.AcademiaService;
 
@@ -42,17 +46,41 @@ public class AcademiaController {
         return ResponseEntity.ok(academiaService.findByGerenteId(gerenteId, authentication));
     }
 
-    @GetMapping("/proximas/usuario/{usuarioId}")
-    public ResponseEntity<List<Academia>> findProximasPorUsuario(
-            @PathVariable Long usuarioId) {
-        return ResponseEntity.ok(academiaService.findProximasPorUsuario(usuarioId));
+    @GetMapping("/proximas")
+    public ResponseEntity<List<AcademiaProximaDTO>> findProximas(Authentication authentication) {
+        return ResponseEntity.ok(academiaService.findProximasPorUsuario(authentication));
     }
 
-    @PostMapping({ "", "/" })
+    @GetMapping("/comparar")
+    public ResponseEntity<List<AcademiaComparacaoDTO>> comparar(
+            @RequestParam("ids") List<Long> ids,
+            Authentication authentication) {
+        return ResponseEntity.ok(academiaService.comparar(ids, authentication));
+    }
+
+    @GetMapping("/proximas/usuario/{usuarioId}")
+    public ResponseEntity<List<AcademiaProximaDTO>> findProximasPorUsuario(
+            @PathVariable Long usuarioId,
+            Authentication authentication) {
+        return ResponseEntity.ok(academiaService.findProximasPorUsuario(usuarioId, authentication));
+    }
+
+    @PostMapping(value = { "", "/" }, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Academia> create(
             @RequestBody Academia academia,
             Authentication authentication) {
         Academia novaAcademia = academiaService.create(academia, authentication);
+        return ResponseEntity.status(HttpStatus.CREATED).body(novaAcademia);
+    }
+
+    @PostMapping(value = { "", "/" }, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Academia> createComFotos(
+            @RequestPart("academia") Academia academia,
+            @RequestPart(name = "foto", required = false) List<MultipartFile> fotos,
+            @RequestParam(required = false) Integer fotoPrincipalIndex,
+            Authentication authentication) {
+        Academia novaAcademia = academiaService.createComFotos(
+                academia, fotos, fotoPrincipalIndex, authentication);
         return ResponseEntity.status(HttpStatus.CREATED).body(novaAcademia);
     }
 

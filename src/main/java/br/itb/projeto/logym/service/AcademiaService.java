@@ -2,12 +2,15 @@ package br.itb.projeto.logym.service;
 
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.http.HttpStatus;
@@ -16,6 +19,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import br.itb.projeto.logym.dto.CoordenadasDTO;
+import br.itb.projeto.logym.dto.EnderecoGeocodificacaoDTO;
+import br.itb.projeto.logym.dto.AcademiaProximaDTO;
+import br.itb.projeto.logym.dto.AcademiaComparacaoDTO;
+import br.itb.projeto.logym.dto.FotoAcademiaDTO;
+import br.itb.projeto.logym.exception.GeocodificacaoException;
 import br.itb.projeto.logym.model.entity.Academia;
 import br.itb.projeto.logym.model.entity.Categoria;
 import br.itb.projeto.logym.model.entity.CategoriaAcademia;
@@ -28,17 +37,19 @@ import br.itb.projeto.logym.repository.CategoriaAcademiaRepository;
 import br.itb.projeto.logym.repository.CategoriaRepository;
 import br.itb.projeto.logym.repository.FacilidadeAcademiaRepository;
 import br.itb.projeto.logym.repository.FacilidadeRepository;
+import br.itb.projeto.logym.repository.FotoAcademiaRepository;
 import br.itb.projeto.logym.repository.GerenteRepository;
+import br.itb.projeto.logym.repository.ItemAvaliacaoAcademiaRepository;
+import br.itb.projeto.logym.repository.ItemAvaliacaoRepository;
 import br.itb.projeto.logym.repository.UsuarioRepository;
 import br.itb.projeto.logym.util.DocumentoValidator;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class AcademiaService {
 
-    private static final BigDecimal LATITUDE_MINIMA = new BigDecimal("-90");
-    private static final BigDecimal LATITUDE_MAXIMA = new BigDecimal("90");
-    private static final BigDecimal LONGITUDE_MINIMA = new BigDecimal("-180");
-    private static final BigDecimal LONGITUDE_MAXIMA = new BigDecimal("180");
+    private static final double RAIO_PADRAO_KM = 5.0;
+    private static final double RAIO_TERRA_KM = 6_371.0;
 
     private final AcademiaRepository academiaRepository;
     private final GerenteRepository gerenteRepository;
@@ -47,6 +58,11 @@ public class AcademiaService {
     private final CategoriaAcademiaRepository categoriaAcademiaRepository;
     private final FacilidadeRepository facilidadeRepository;
     private final FacilidadeAcademiaRepository facilidadeAcademiaRepository;
+    private final FotoAcademiaRepository fotoAcademiaRepository;
+    private final ItemAvaliacaoRepository itemAvaliacaoRepository;
+    private final ItemAvaliacaoAcademiaRepository itemAvaliacaoAcademiaRepository;
+    private final GeocodificacaoService geocodificacaoService;
+    private final FotoAcademiaService fotoAcademiaService;
 
     public AcademiaService(
             AcademiaRepository academiaRepository,
@@ -55,7 +71,12 @@ public class AcademiaService {
             CategoriaRepository categoriaRepository,
             CategoriaAcademiaRepository categoriaAcademiaRepository,
             FacilidadeRepository facilidadeRepository,
-            FacilidadeAcademiaRepository facilidadeAcademiaRepository) {
+            FacilidadeAcademiaRepository facilidadeAcademiaRepository,
+            FotoAcademiaRepository fotoAcademiaRepository,
+            ItemAvaliacaoRepository itemAvaliacaoRepository,
+            ItemAvaliacaoAcademiaRepository itemAvaliacaoAcademiaRepository,
+            GeocodificacaoService geocodificacaoService,
+            FotoAcademiaService fotoAcademiaService) {
         this.academiaRepository = academiaRepository;
         this.gerenteRepository = gerenteRepository;
         this.usuarioRepository = usuarioRepository;
@@ -63,6 +84,11 @@ public class AcademiaService {
         this.categoriaAcademiaRepository = categoriaAcademiaRepository;
         this.facilidadeRepository = facilidadeRepository;
         this.facilidadeAcademiaRepository = facilidadeAcademiaRepository;
+        this.fotoAcademiaRepository = fotoAcademiaRepository;
+        this.itemAvaliacaoRepository = itemAvaliacaoRepository;
+        this.itemAvaliacaoAcademiaRepository = itemAvaliacaoAcademiaRepository;
+        this.geocodificacaoService = geocodificacaoService;
+        this.fotoAcademiaService = fotoAcademiaService;
     }
 
     public List<Academia> findAllAtivas() {
@@ -90,21 +116,44 @@ public class AcademiaService {
         return carregarCategoriasVinculadas(academia);
     }
 
-    public List<Academia> findProximasPorUsuario(Long usuarioId) {
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuario nao encontrado."));
+    public List<AcademiaProximaDTO> findProximasPorUsuario(Authentication authentication) {
+        return buscarAcademiasProximas(buscarUsuarioComumElegivel(authentication));
+    }
 
-        String cepUsuario = limparCep(usuario.getCep());
+    public List<AcademiaProximaDTO> findProximasPorUsuario(Long usuarioId, Authentication authentication) {
+        Usuario usuario = buscarUsuarioComumElegivel(authentication);
 
-        List<Academia> academias = academiaRepository.findByStatusAcademia("ATIVO");
+        if (!usuario.getId().equals(usuarioId)) {
+            throw acessoNegado();
+        }
 
-        academias.sort(
-                Comparator
-                        .comparingInt(
-                                (Academia academia) -> calcularPontuacaoCep(cepUsuario, limparCep(academia.getCep())))
-                        .reversed());
+        return buscarAcademiasProximas(usuario);
+    }
 
-        return carregarCategoriasVinculadas(academias);
+    @Transactional(readOnly = true)
+    public List<AcademiaComparacaoDTO> comparar(List<Long> ids, Authentication authentication) {
+        Usuario usuario = buscarUsuarioComumElegivel(authentication);
+        validarIdsParaComparacao(ids);
+
+        List<Academia> academias = ids.stream()
+                .map(this::buscarAcademiaAtivaParaComparacao)
+                .toList();
+        List<Long> academiaIds = academias.stream().map(Academia::getId).toList();
+        Map<Long, Map<Long, BigDecimal>> mediasPorAcademiaEItem = buscarMediasPorCriterio(academiaIds);
+        List<AcademiaComparacaoDTO.ItemEstruturadoComparacaoDTO> criterios = itemAvaliacaoRepository
+                .findAllByOrderByIdAsc()
+                .stream()
+                .map(item -> new AcademiaComparacaoDTO.ItemEstruturadoComparacaoDTO(
+                        item.getId(), item.getNome(), item.getDescricao()))
+                .toList();
+
+        return academias.stream()
+                .map(academia -> montarComparacaoAcademia(
+                        academia,
+                        usuario,
+                        criterios,
+                        mediasPorAcademiaEItem.getOrDefault(academia.getId(), Map.of())))
+                .toList();
     }
 
     @Transactional
@@ -117,7 +166,9 @@ public class AcademiaService {
 
         academia.setCnpj(academia.getCnpj().replaceAll("\\D", ""));
         academia.setCep(limparCep(academia.getCep()));
-        validarCoordenadas(academia.getLatitude(), academia.getLongitude());
+        CoordenadasDTO coordenadas = geocodificarAcademia(academia, academia.getCep());
+        academia.setLatitude(coordenadas.latitude());
+        academia.setLongitude(coordenadas.longitude());
 
         academia.setGerente(gerente);
         academia.setDataCadastro(LocalDateTime.now());
@@ -149,6 +200,29 @@ public class AcademiaService {
     }
 
     @Transactional
+    public Academia createComFotos(
+            Academia academia,
+            List<MultipartFile> fotos,
+            Integer fotoPrincipalIndex,
+            Authentication authentication) {
+        Academia academiaSalva = create(academia, authentication);
+
+        if (fotos == null || fotos.isEmpty()) {
+            if (fotoPrincipalIndex != null) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Indice da foto principal invalido.");
+            }
+            return academiaSalva;
+        }
+
+        fotoAcademiaService.salvarLote(
+                academiaSalva.getId(), fotos, fotoPrincipalIndex, authentication);
+
+        return carregarCategoriasVinculadas(academiaSalva);
+    }
+
+    @Transactional
     public Academia update(Long id, Academia dadosAtualizados, Authentication authentication) {
         Academia academia = findById(id);
         validarPropriedadeAcademia(academia, authentication);
@@ -158,11 +232,17 @@ public class AcademiaService {
         }
 
         dadosAtualizados.setCnpj(dadosAtualizados.getCnpj().replaceAll("\\D", ""));
+        String cepAtualizado = limparCep(dadosAtualizados.getCep());
+        CoordenadasDTO novasCoordenadas = null;
+
+        if (enderecoRelevanteAlterado(academia, dadosAtualizados, cepAtualizado)) {
+            novasCoordenadas = geocodificarAcademia(dadosAtualizados, cepAtualizado);
+        }
 
         academia.setNome(dadosAtualizados.getNome());
         academia.setCnpj(dadosAtualizados.getCnpj());
         academia.setDescricao(dadosAtualizados.getDescricao());
-        academia.setCep(limparCep(dadosAtualizados.getCep()));
+        academia.setCep(cepAtualizado);
         academia.setEndereco(dadosAtualizados.getEndereco());
         academia.setNumero(dadosAtualizados.getNumero());
         academia.setComplemento(dadosAtualizados.getComplemento());
@@ -172,7 +252,10 @@ public class AcademiaService {
         academia.setTelefone(dadosAtualizados.getTelefone());
         academia.setCelular(dadosAtualizados.getCelular());
         academia.setEmail(dadosAtualizados.getEmail());
-        atualizarCoordenadas(academia, dadosAtualizados);
+        if (novasCoordenadas != null) {
+            academia.setLatitude(novasCoordenadas.latitude());
+            academia.setLongitude(novasCoordenadas.longitude());
+        }
         academia.setCategorias(dadosAtualizados.getCategorias());
         academia.setFacilidades(dadosAtualizados.getFacilidades());
 
@@ -300,6 +383,190 @@ public class AcademiaService {
         return new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado.");
     }
 
+    private Usuario buscarUsuarioComumElegivel(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            throw acessoNegado();
+        }
+
+        Usuario usuario = usuarioRepository.findByUsername(normalizarUsername(authentication.getName()))
+                .orElseThrow(this::acessoNegado);
+
+        if (!"USER".equals(usuario.getNivelAcesso()) || !"ATIVO".equals(usuario.getStatusUsuario())) {
+            throw acessoNegado();
+        }
+
+        return usuario;
+    }
+
+    private List<AcademiaProximaDTO> buscarAcademiasProximas(Usuario usuario) {
+        if (usuario.getLatitude() == null || usuario.getLongitude() == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Usuario nao possui coordenadas para localizar academias proximas.");
+        }
+
+        return academiaRepository.findByStatusAcademia("ATIVO")
+                .stream()
+                .filter(this::possuiCoordenadas)
+                .map(academia -> new AcademiaComDistancia(
+                        academia,
+                        calcularDistanciaKm(usuario, academia)))
+                .filter(academia -> academia.distanciaKm() <= RAIO_PADRAO_KM)
+                .sorted(Comparator
+                        .comparingDouble(AcademiaComDistancia::distanciaKm)
+                        .thenComparing(academia -> academia.academia().getId()))
+                .map(academia -> new AcademiaProximaDTO(
+                        carregarCategoriasVinculadas(academia.academia()),
+                        BigDecimal.valueOf(academia.distanciaKm()).setScale(2, RoundingMode.HALF_UP)))
+                .toList();
+    }
+
+    private void validarIdsParaComparacao(List<Long> ids) {
+        if (ids == null || ids.size() < 2 || ids.size() > 3) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Informe entre 2 e 3 academias para comparar.");
+        }
+
+        if (ids.stream().anyMatch(id -> id == null || id <= 0)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "IDs de academia invalidos.");
+        }
+
+        if (new LinkedHashSet<>(ids).size() != ids.size()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "IDs de academia nao podem ser duplicados.");
+        }
+    }
+
+    private Academia buscarAcademiaAtivaParaComparacao(Long academiaId) {
+        Academia academia = academiaRepository.findById(academiaId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Academia nao encontrada ou inativa para comparacao."));
+
+        if (!"ATIVO".equals(academia.getStatusAcademia())) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Academia nao encontrada ou inativa para comparacao.");
+        }
+
+        return academia;
+    }
+
+    private Map<Long, Map<Long, BigDecimal>> buscarMediasPorCriterio(List<Long> academiaIds) {
+        Map<Long, Map<Long, BigDecimal>> medias = new LinkedHashMap<>();
+
+        itemAvaliacaoAcademiaRepository.calcularMediasAtivasPorAcademiaIds(academiaIds)
+                .forEach(resultado -> {
+                    Long academiaId = ((Number) resultado[0]).longValue();
+                    Long itemId = ((Number) resultado[1]).longValue();
+                    BigDecimal media = BigDecimal.valueOf(((Number) resultado[2]).doubleValue())
+                            .setScale(1, RoundingMode.HALF_UP);
+
+                    medias.computeIfAbsent(academiaId, chave -> new LinkedHashMap<>())
+                            .put(itemId, media);
+                });
+
+        return medias;
+    }
+
+    private AcademiaComparacaoDTO montarComparacaoAcademia(
+            Academia academia,
+            Usuario usuario,
+            List<AcademiaComparacaoDTO.ItemEstruturadoComparacaoDTO> criterios,
+            Map<Long, BigDecimal> mediasPorItem) {
+        return new AcademiaComparacaoDTO(
+                academia.getId(),
+                academia.getNome(),
+                buscarFotoPrincipal(academia.getId()),
+                academia.getNota(),
+                calcularDistanciaParaComparacao(usuario, academia),
+                academia.getEndereco(),
+                academia.getNumero(),
+                academia.getComplemento(),
+                academia.getBairro(),
+                academia.getCidade(),
+                academia.getEstado(),
+                buscarCategoriasAtivasDaAcademia(academia.getId()),
+                buscarFacilidadesAtivasDaAcademia(academia.getId()),
+                criterios.stream()
+                        .map(criterio -> new AcademiaComparacaoDTO.CriterioComparacaoDTO(
+                                criterio.id(), criterio.nome(), mediasPorItem.get(criterio.id())))
+                        .toList());
+    }
+
+    private AcademiaComparacaoDTO.FotoPrincipalComparacaoDTO buscarFotoPrincipal(Long academiaId) {
+        return fotoAcademiaRepository
+                .findByAcademiaIdAndStatusFotoAndPrincipalTrue(academiaId, "ATIVO")
+                .map(foto -> new AcademiaComparacaoDTO.FotoPrincipalComparacaoDTO(
+                        foto.getId(),
+                        foto.getTipoArquivo(),
+                        "/fotos-academia/" + foto.getId() + "/imagem"))
+                .orElse(null);
+    }
+
+    private List<AcademiaComparacaoDTO.ItemEstruturadoComparacaoDTO> buscarCategoriasAtivasDaAcademia(
+            Long academiaId) {
+        return categoriaAcademiaRepository
+                .findByAcademiaIdAndStatusCategoriaAcademia(academiaId, "ATIVO")
+                .stream()
+                .map(CategoriaAcademia::getCategoria)
+                .filter(categoria -> "ATIVO".equals(categoria.getStatusCategoria()))
+                .map(categoria -> new AcademiaComparacaoDTO.ItemEstruturadoComparacaoDTO(
+                        categoria.getId(), categoria.getNome(), categoria.getDescricao()))
+                .toList();
+    }
+
+    private List<AcademiaComparacaoDTO.ItemEstruturadoComparacaoDTO> buscarFacilidadesAtivasDaAcademia(
+            Long academiaId) {
+        return facilidadeAcademiaRepository
+                .findByAcademiaIdAndStatusFacilidadeAcademia(academiaId, "ATIVO")
+                .stream()
+                .map(FacilidadeAcademia::getFacilidade)
+                .filter(facilidade -> "ATIVO".equals(facilidade.getStatusFacilidade()))
+                .map(facilidade -> new AcademiaComparacaoDTO.ItemEstruturadoComparacaoDTO(
+                        facilidade.getId(), facilidade.getNome(), facilidade.getDescricao()))
+                .toList();
+    }
+
+    private BigDecimal calcularDistanciaParaComparacao(Usuario usuario, Academia academia) {
+        if (!possuiCoordenadasValidas(usuario.getLatitude(), usuario.getLongitude())
+                || !possuiCoordenadasValidas(academia.getLatitude(), academia.getLongitude())) {
+            return null;
+        }
+
+        return BigDecimal.valueOf(calcularDistanciaKm(usuario, academia))
+                .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private boolean possuiCoordenadasValidas(BigDecimal latitude, BigDecimal longitude) {
+        return latitude != null && longitude != null
+                && latitude.compareTo(BigDecimal.valueOf(-90)) >= 0
+                && latitude.compareTo(BigDecimal.valueOf(90)) <= 0
+                && longitude.compareTo(BigDecimal.valueOf(-180)) >= 0
+                && longitude.compareTo(BigDecimal.valueOf(180)) <= 0;
+    }
+
+    private boolean possuiCoordenadas(Academia academia) {
+        return academia.getLatitude() != null && academia.getLongitude() != null;
+    }
+
+    private double calcularDistanciaKm(Usuario usuario, Academia academia) {
+        double latitudeUsuarioEmRadianos = Math.toRadians(usuario.getLatitude().doubleValue());
+        double latitudeAcademiaEmRadianos = Math.toRadians(academia.getLatitude().doubleValue());
+        double diferencaLatitude = latitudeAcademiaEmRadianos - latitudeUsuarioEmRadianos;
+        double diferencaLongitude = Math.toRadians(
+                academia.getLongitude().doubleValue() - usuario.getLongitude().doubleValue());
+
+        double senoLatitude = Math.sin(diferencaLatitude / 2);
+        double senoLongitude = Math.sin(diferencaLongitude / 2);
+        double haversine = senoLatitude * senoLatitude
+                + Math.cos(latitudeUsuarioEmRadianos) * Math.cos(latitudeAcademiaEmRadianos)
+                        * senoLongitude * senoLongitude;
+
+        return 2 * RAIO_TERRA_KM * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+    }
+
     private List<Academia> carregarCategoriasVinculadas(List<Academia> academias) {
         academias.forEach(this::carregarCategoriasVinculadas);
         return academias;
@@ -315,6 +582,7 @@ public class AcademiaService {
         academia.setCategoriasVinculadas(categorias);
         academia.setCategoriaIds(categorias.stream().map(Categoria::getId).toList());
         carregarFacilidadesVinculadas(academia);
+        carregarFotoPrincipal(academia);
 
         return academia;
     }
@@ -329,6 +597,21 @@ public class AcademiaService {
         academia.setFacilidadesVinculadas(facilidades);
         academia.setFacilidadeIds(facilidades.stream().map(Facilidade::getId).toList());
 
+        return academia;
+    }
+
+    private Academia carregarFotoPrincipal(Academia academia) {
+        FotoAcademiaDTO fotoPrincipal = fotoAcademiaRepository
+                .findByAcademiaIdAndStatusFotoAndPrincipalTrue(academia.getId(), "ATIVO")
+                .map(foto -> new FotoAcademiaDTO(
+                        foto.getId(),
+                        academia.getId(),
+                        foto.getTipoArquivo(),
+                        foto.getDataCadastro(),
+                        foto.isPrincipal()))
+                .orElse(null);
+
+        academia.setFotoPrincipal(fotoPrincipal);
         return academia;
     }
 
@@ -514,35 +797,59 @@ public class AcademiaService {
         return String.join(", ", facilidades.stream().map(Facilidade::getNome).toList());
     }
 
-    private void atualizarCoordenadas(Academia academia, Academia dadosAtualizados) {
-        BigDecimal latitude = dadosAtualizados.getLatitude();
-        BigDecimal longitude = dadosAtualizados.getLongitude();
+    private CoordenadasDTO geocodificarAcademia(Academia academia, String cep) {
+        validarEnderecoParaGeocodificacao(academia);
 
-        if (latitude == null && longitude == null) {
-            return;
-        }
-
-        validarCoordenadas(latitude, longitude);
-        academia.setLatitude(latitude);
-        academia.setLongitude(longitude);
+        return geocodificacaoService.geocodificar(new EnderecoGeocodificacaoDTO(
+                academia.getEndereco(),
+                academia.getNumero(),
+                academia.getBairro(),
+                academia.getCidade(),
+                academia.getEstado(),
+                cep,
+                academia.getComplemento()));
     }
 
-    private void validarCoordenadas(BigDecimal latitude, BigDecimal longitude) {
-        if (latitude == null && longitude == null) {
-            return;
+    private void validarEnderecoParaGeocodificacao(Academia academia) {
+        if (!textoPreenchido(academia.getEndereco())
+                || academia.getNumero() == null
+                || !textoPreenchido(academia.getCidade())
+                || !textoPreenchido(academia.getEstado())) {
+            throw new GeocodificacaoException("Endereco insuficiente para geocodificacao.");
+        }
+    }
+
+    private boolean enderecoRelevanteAlterado(
+            Academia academia,
+            Academia dadosAtualizados,
+            String cepAtualizado) {
+        return !Objects.equals(limparCep(academia.getCep()), cepAtualizado)
+                || !Objects.equals(normalizarTexto(academia.getEndereco()), normalizarTexto(dadosAtualizados.getEndereco()))
+                || numerosDiferentes(academia.getNumero(), dadosAtualizados.getNumero())
+                || !Objects.equals(normalizarTexto(academia.getBairro()), normalizarTexto(dadosAtualizados.getBairro()))
+                || !Objects.equals(normalizarTexto(academia.getCidade()), normalizarTexto(dadosAtualizados.getCidade()))
+                || !Objects.equals(normalizarTexto(academia.getEstado()), normalizarTexto(dadosAtualizados.getEstado()));
+    }
+
+    private boolean numerosDiferentes(BigDecimal primeiroNumero, BigDecimal segundoNumero) {
+        if (primeiroNumero == null || segundoNumero == null) {
+            return primeiroNumero != segundoNumero;
         }
 
-        if (latitude == null || longitude == null) {
-            throw new RuntimeException("Latitude e longitude devem ser informadas juntas.");
+        return primeiroNumero.compareTo(segundoNumero) != 0;
+    }
+
+    private boolean textoPreenchido(String texto) {
+        return normalizarTexto(texto) != null;
+    }
+
+    private String normalizarTexto(String texto) {
+        if (texto == null) {
+            return null;
         }
 
-        if (latitude.compareTo(LATITUDE_MINIMA) < 0 || latitude.compareTo(LATITUDE_MAXIMA) > 0) {
-            throw new RuntimeException("Latitude invalida. Informe um valor entre -90 e 90.");
-        }
-
-        if (longitude.compareTo(LONGITUDE_MINIMA) < 0 || longitude.compareTo(LONGITUDE_MAXIMA) > 0) {
-            throw new RuntimeException("Longitude invalida. Informe um valor entre -180 e 180.");
-        }
+        String textoNormalizado = texto.trim().replaceAll("\\s+", " ");
+        return textoNormalizado.isBlank() ? null : textoNormalizado.toLowerCase(Locale.ROOT);
     }
 
     private String limparCep(String cep) {
@@ -553,25 +860,6 @@ public class AcademiaService {
         return cep.replaceAll("\\D", "");
     }
 
-    private int calcularPontuacaoCep(String cepUsuario, String cepAcademia) {
-        if (cepUsuario == null || cepAcademia == null) {
-            return 0;
-        }
-
-        if (cepUsuario.length() != 8 || cepAcademia.length() != 8) {
-            return 0;
-        }
-
-        int pontos = 0;
-
-        for (int i = 0; i < 8; i++) {
-            if (cepUsuario.charAt(i) == cepAcademia.charAt(i)) {
-                pontos++;
-            } else {
-                break;
-            }
-        }
-
-        return pontos;
+    private record AcademiaComDistancia(Academia academia, double distanciaKm) {
     }
 }

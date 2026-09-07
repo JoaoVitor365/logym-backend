@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import br.itb.projeto.logym.dto.FotoAcademiaDTO;
 import jakarta.persistence.*;
 
 @Entity
@@ -70,6 +71,9 @@ public class Academia {
 
     @Column(length = 300)
     private String facilidades;
+
+    @Transient
+    private FotoAcademiaDTO fotoPrincipal;
 
     @Transient
     private List<Long> facilidadeIds;
@@ -170,6 +174,10 @@ public class Academia {
 
     public String getFacilidades() {
         return facilidades;
+    }
+
+    public FotoAcademiaDTO getFotoPrincipal() {
+        return fotoPrincipal;
     }
 
     public List<Long> getFacilidadeIds() {
@@ -278,6 +286,10 @@ public class Academia {
 
     public void setFacilidades(String facilidades) {
         this.facilidades = facilidades;
+    }
+
+    public void setFotoPrincipal(FotoAcademiaDTO fotoPrincipal) {
+        this.fotoPrincipal = fotoPrincipal;
     }
 
     public void setFacilidadeIds(List<Long> facilidadeIds) {

@@ -1,5 +1,6 @@
 package br.itb.projeto.logym.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class UsuarioDTO {
@@ -9,6 +10,10 @@ public class UsuarioDTO {
     private String username;
     private String nivelAcesso;
     private String cep;
+    private BigDecimal numero;
+    private String complemento;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
     private byte[] foto;
     private String statusUsuario;
     private LocalDateTime dataCadastro;
@@ -19,6 +24,10 @@ public class UsuarioDTO {
             String username,
             String nivelAcesso,
             String cep,
+            BigDecimal numero,
+            String complemento,
+            BigDecimal latitude,
+            BigDecimal longitude,
             byte[] foto,
             LocalDateTime dataCadastro,
             String statusUsuario
@@ -28,6 +37,10 @@ public class UsuarioDTO {
         this.username = username;
         this.nivelAcesso = nivelAcesso;
         this.cep = cep;
+        this.numero = numero;
+        this.complemento = complemento;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.foto = foto;
         this.statusUsuario = statusUsuario;
         this.dataCadastro = dataCadastro;
@@ -51,6 +64,22 @@ public class UsuarioDTO {
 
     public String getCep() {
         return cep;
+    }
+
+    public BigDecimal getNumero() {
+        return numero;
+    }
+
+    public String getComplemento() {
+        return complemento;
+    }
+
+    public BigDecimal getLatitude() {
+        return latitude;
+    }
+
+    public BigDecimal getLongitude() {
+        return longitude;
     }
 
     public byte[] getFoto() {
@@ -83,6 +112,22 @@ public class UsuarioDTO {
 
     public void setCep(String cep) {
         this.cep = cep;
+    }
+
+    public void setNumero(BigDecimal numero) {
+        this.numero = numero;
+    }
+
+    public void setComplemento(String complemento) {
+        this.complemento = complemento;
+    }
+
+    public void setLatitude(BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(BigDecimal longitude) {
+        this.longitude = longitude;
     }
 
     public void setFoto(byte[] foto) {

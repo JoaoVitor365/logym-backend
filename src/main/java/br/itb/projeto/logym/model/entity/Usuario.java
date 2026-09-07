@@ -1,5 +1,6 @@
 package br.itb.projeto.logym.model.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -38,6 +39,18 @@ public class Usuario {
     @Column(length = 8)
     private String cep;
 
+    @Column(precision = 10, scale = 0)
+    private BigDecimal numero;
+
+    @Column(length = 100)
+    private String complemento;
+
+    @Column(precision = 10, scale = 7)
+    private BigDecimal latitude;
+
+    @Column(precision = 10, scale = 7)
+    private BigDecimal longitude;
+
      // Foto salva no banco como VARBINARY(MAX).
     // O Web já usa esse campo para salvar a foto de perfil.
 
@@ -74,6 +87,22 @@ public class Usuario {
 
     public String getCep() {
         return cep;
+    }
+
+    public BigDecimal getNumero() {
+        return numero;
+    }
+
+    public String getComplemento() {
+        return complemento;
+    }
+
+    public BigDecimal getLatitude() {
+        return latitude;
+    }
+
+    public BigDecimal getLongitude() {
+        return longitude;
     }
 
     public byte[] getFoto() {
@@ -114,6 +143,22 @@ public class Usuario {
 
     public void setCep(String cep) {
         this.cep = cep;
+    }
+
+    public void setNumero(BigDecimal numero) {
+        this.numero = numero;
+    }
+
+    public void setComplemento(String complemento) {
+        this.complemento = complemento;
+    }
+
+    public void setLatitude(BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(BigDecimal longitude) {
+        this.longitude = longitude;
     }
 
     public void setFoto(byte[] foto) {

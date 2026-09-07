@@ -40,6 +40,10 @@ CREATE TABLE Usuario (
     password VARCHAR(100) NOT NULL,
     nivelAcesso VARCHAR(10) NOT NULL,
     cep CHAR(8) NULL,
+    numero DECIMAL(10,0) NULL,
+    complemento VARCHAR(100) NULL,
+    latitude DECIMAL(10,7) NULL,
+    longitude DECIMAL(10,7) NULL,
     foto VARBINARY(MAX) NULL,
     dataCadastro SMALLDATETIME NOT NULL DEFAULT GETDATE(),
     dataAtualizacao SMALLDATETIME NULL,
@@ -145,6 +149,7 @@ CREATE TABLE FotoAcademia
     academia_id     INT             NOT NULL,
     dataCadastro    SMALLDATETIME   NOT NULL,
     statusFoto      VARCHAR(20)     NOT NULL, -- ATIVO ou INATIVO
+    principal       BIT             NOT NULL DEFAULT 0,
 
     PRIMARY KEY (id),
     FOREIGN KEY (academia_id) REFERENCES Academia(id),
@@ -152,6 +157,11 @@ CREATE TABLE FotoAcademia
     CONSTRAINT CK_FotoAcademia_Status
     CHECK (statusFoto IN ('ATIVO', 'INATIVO'))
 );
+GO
+
+CREATE UNIQUE INDEX UX_FotoAcademia_Principal
+ON FotoAcademia(academia_id)
+WHERE principal = 1;
 GO
 
 CREATE TABLE Categoria
@@ -299,18 +309,18 @@ GO
 ----------------- INSERTS DE USUÁRIOS -----------------
 
 ---- USUÁRIO nivelAcesso=ADMIN
-INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario)
-VALUES ('Admin', 'admin@logym.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'ADMIN', NULL, NULL, GETDATE(), NULL, 'ATIVO');
+INSERT Usuario (nome, username, password, nivelAcesso, cep, numero, complemento, latitude, longitude, foto, dataCadastro, dataAtualizacao, statusUsuario)
+VALUES ('Admin', 'admin@logym.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'ADMIN', NULL, NULL, NULL, NULL, NULL, NULL, GETDATE(), NULL, 'ATIVO');
 ----                                        123123
 
 
 
 ---- USUÁRIO nivelAcesso=MANAGER
-INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario)
-VALUES ('João Pedro', 'joaopedro@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'MANAGER', NULL, NULL, GETDATE(), NULL, 'ATIVO');
+INSERT Usuario (nome, username, password, nivelAcesso, cep, numero, complemento, latitude, longitude, foto, dataCadastro, dataAtualizacao, statusUsuario)
+VALUES ('João Pedro', 'joaopedro@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'MANAGER', NULL, NULL, NULL, NULL, NULL, NULL, GETDATE(), NULL, 'ATIVO');
 --                                                  123123
-INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario) 
-VALUES ('Rodrigo Wagner', 'rodrigowagner@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'MANAGER', NULL, NULL, GETDATE(), NULL, 'ATIVO');
+INSERT Usuario (nome, username, password, nivelAcesso, cep, numero, complemento, latitude, longitude, foto, dataCadastro, dataAtualizacao, statusUsuario) 
+VALUES ('Rodrigo Wagner', 'rodrigowagner@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'MANAGER', NULL, NULL, NULL, NULL, NULL, NULL, GETDATE(), NULL, 'ATIVO');
 --                                                          123123
 
 
@@ -326,20 +336,20 @@ VALUES ('Rodrigo Wagner', '48372619573', '(11) 98888-4545', '1981-08-24', 3, GET
 
 
 ---- USUÁRIO nivelAcesso=USER
-INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario)
-VALUES ('João Vitor', 'joaovitor@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06401050', NULL, GETDATE(), NULL, 'ATIVO');
+INSERT Usuario (nome, username, password, nivelAcesso, cep, numero, complemento, latitude, longitude, foto, dataCadastro, dataAtualizacao, statusUsuario)
+VALUES ('João Vitor', 'joaovitor@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06401050', NULL, NULL, NULL, NULL, NULL, GETDATE(), NULL, 'ATIVO');
 --                                                  123123
-INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario) 
-VALUES ('Mariana Costa', 'marianacosta@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06401050', NULL, GETDATE(), NULL, 'ATIVO');
+INSERT Usuario (nome, username, password, nivelAcesso, cep, numero, complemento, latitude, longitude, foto, dataCadastro, dataAtualizacao, statusUsuario) 
+VALUES ('Mariana Costa', 'marianacosta@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06401050', NULL, NULL, NULL, NULL, NULL, GETDATE(), NULL, 'ATIVO');
 --
-INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario) 
-VALUES ('Lucas Ferreira', 'lucasferreira@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06449300', NULL, GETDATE(), NULL, 'ATIVO');
+INSERT Usuario (nome, username, password, nivelAcesso, cep, numero, complemento, latitude, longitude, foto, dataCadastro, dataAtualizacao, statusUsuario) 
+VALUES ('Lucas Ferreira', 'lucasferreira@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06449300', NULL, NULL, NULL, NULL, NULL, GETDATE(), NULL, 'ATIVO');
 --
-INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario) 
-VALUES ('Camila Rodrigues', 'camilarodrigues@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06440180', NULL, GETDATE(), NULL, 'ATIVO');
+INSERT Usuario (nome, username, password, nivelAcesso, cep, numero, complemento, latitude, longitude, foto, dataCadastro, dataAtualizacao, statusUsuario) 
+VALUES ('Camila Rodrigues', 'camilarodrigues@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06440180', NULL, NULL, NULL, NULL, NULL, GETDATE(), NULL, 'ATIVO');
 --
-INSERT Usuario (nome, username, password, nivelAcesso, cep, foto, dataCadastro, dataAtualizacao, statusUsuario) 
-VALUES ('Rafael Almeida', 'rafaelalmeida@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06455000', NULL, GETDATE(), NULL, 'ATIVO');
+INSERT Usuario (nome, username, password, nivelAcesso, cep, numero, complemento, latitude, longitude, foto, dataCadastro, dataAtualizacao, statusUsuario) 
+VALUES ('Rafael Almeida', 'rafaelalmeida@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'USER', '06455000', NULL, NULL, NULL, NULL, NULL, GETDATE(), NULL, 'ATIVO');
 ----
 
 
@@ -413,6 +423,7 @@ INSERT INTO Academia
 (
     nome, cnpj, descricao, cep, endereco, numero, complemento,
     bairro, cidade, estado, telefone, celular, email,
+    latitude, longitude,
     categorias, facilidades, nota, gerente_id, dataCadastro, statusAcademia
 )
 VALUES
@@ -430,6 +441,8 @@ VALUES
     '(11) 4002-1000',
     '(11) 99999-1000',
     'smartfit.baruericentro@logym.com',
+    -23.5111040,
+    -46.8822250,
     'Musculação, Funcional, Personal Trainer',
     'Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -451,6 +464,8 @@ VALUES
     '(11) 4002-1001',
     '(11) 99999-1001',
     'smartfit.estradadaspitas@logym.com',
+    -23.5483373,
+    -46.8755277,
     'Musculação, Funcional, Personal Trainer',
     'Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -472,6 +487,8 @@ VALUES
     '(11) 4002-1002',
     '(11) 99999-1002',
     'smartfit.parqueshoppingbarueri@logym.com',
+    -23.5119000,
+    -46.8539000,
     'Musculação, Funcional, Personal Trainer',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -493,6 +510,8 @@ VALUES
     '(11) 4002-1003',
     '(11) 99999-1003',
     'smartfit.carrefourtambore@logym.com',
+    -23.5005000,
+    -46.8420000,
     'Musculação, Funcional, Personal Trainer',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -514,6 +533,8 @@ VALUES
     '(11) 4002-1004',
     '(11) 99999-1004',
     'smartfit.sodimacalphaville@logym.com',
+    -23.5032000,
+    -46.8475000,
     'Musculação, Funcional, Personal Trainer',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -535,6 +556,8 @@ VALUES
     '(11) 4002-1005',
     '(11) 99999-1005',
     'smartfit.shoppingflamingo@logym.com',
+    -23.5005000,
+    -46.8420000,
     'Musculação, Funcional, Personal Trainer',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -556,6 +579,8 @@ VALUES
     '(11) 4002-1006',
     '(11) 99999-1006',
     'bluefit.barueri@logym.com',
+    -23.5059729,
+    -46.8678626,
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -577,6 +602,8 @@ VALUES
     '(11) 4002-1007',
     '(11) 99999-1007',
     'bluefit.alphaville@logym.com',
+    -23.4990000,
+    -46.8520000,
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -598,6 +625,8 @@ VALUES
     '(11) 4002-1008',
     '(11) 99999-1008',
     'smartfit.roldaoosasco@logym.com',
+    -23.5297000,
+    -46.8151000,
     'Musculação, Funcional, Personal Trainer',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -619,6 +648,8 @@ VALUES
     '(11) 4002-1009',
     '(11) 99999-1009',
     'smartfit.osascokm18@logym.com',
+    -23.5293778,
+    -46.7942085,
     'Musculação, Funcional, Personal Trainer',
     'Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -640,6 +671,8 @@ VALUES
     '(11) 4002-1010',
     '(11) 99999-1010',
     'smartfit.patioosasco@logym.com',
+    -23.5316900,
+    -46.7759700,
     'Musculação, Funcional, Personal Trainer',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -661,6 +694,8 @@ VALUES
     '(11) 4002-1011',
     '(11) 99999-1011',
     'smartfit.uniaoosasco@logym.com',
+    -23.5392810,
+    -46.7655140,
     'Musculação, Funcional, Personal Trainer',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -682,6 +717,8 @@ VALUES
     '(11) 4002-1012',
     '(11) 99999-1012',
     'bluefit.osasco@logym.com',
+    -23.5344561,
+    -46.7731396,
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -703,6 +740,8 @@ VALUES
     '(11) 4002-1013',
     '(11) 99999-1013',
     'bluefit.km18@logym.com',
+    -23.5275433,
+    -46.7923013,
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -724,6 +763,8 @@ VALUES
     '(11) 4002-1014',
     '(11) 99999-1014',
     'bluefit.novoosasco@logym.com',
+    -23.5725656,
+    -46.8056043,
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -745,6 +786,8 @@ VALUES
     '(11) 4002-1015',
     '(11) 99999-1015',
     'bluefit.rochdale@logym.com',
+    -23.5139709,
+    -46.7778751,
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -766,6 +809,8 @@ VALUES
     '(11) 4002-1016',
     '(11) 99999-1016',
     'smartfit.carapicuibacentro@logym.com',
+    -23.5239000,
+    -46.8421000,
     'Musculação, Funcional, Personal Trainer',
     'Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -787,6 +832,8 @@ VALUES
     '(11) 4002-1017',
     '(11) 99999-1017',
     'smartfit.viladirce@logym.com',
+    -23.5467000,
+    -46.8339000,
     'Musculação, Funcional, Personal Trainer',
     'Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -808,6 +855,8 @@ VALUES
     '(11) 4002-1018',
     '(11) 99999-1018',
     'smartfit.parquesantateresa@logym.com',
+    -23.5661963,
+    -46.8254419,
     'Musculação, Funcional, Personal Trainer',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -829,6 +878,8 @@ VALUES
     '(11) 4002-1019',
     '(11) 99999-1019',
     'smartfit.jandiracentro@logym.com',
+    -23.5298289,
+    -46.8979131,
     'Musculação, Funcional, Personal Trainer',
     'Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -850,6 +901,8 @@ VALUES
     '(11) 4002-1020',
     '(11) 99999-1020',
     'smartfit.itapevicentro@logym.com',
+    -23.5469200,
+    -46.9347600,
     'Musculação, Funcional, Personal Trainer',
     'Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -871,6 +924,8 @@ VALUES
     '(11) 4002-1021',
     '(11) 99999-1021',
     'bluefit.carapicuiba@logym.com',
+    -23.5519493,
+    -46.8388493,
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -892,6 +947,8 @@ VALUES
     '(11) 4002-1022',
     '(11) 99999-1022',
     'bluefit.cotia@logym.com',
+    -23.6081173,
+    -46.9242644,
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,
@@ -913,6 +970,8 @@ VALUES
     '(11) 4002-1023',
     '(11) 99999-1023',
     'bluefit.granjaviana@logym.com',
+    -23.5846711,
+    -46.8357644,
     'Musculação, Funcional, Lutas, Spinning',
     'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
     NULL,

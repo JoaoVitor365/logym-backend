@@ -26,9 +26,21 @@ public class FotoAcademiaController {
     public ResponseEntity<FotoAcademiaDTO> salvar(
             @PathVariable Long academiaId,
             @RequestParam("foto") MultipartFile foto,
+            @RequestParam(required = false) Integer fotoPrincipalIndex,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(fotoAcademiaService.salvar(academiaId, foto, authentication));
+        return ResponseEntity.ok(fotoAcademiaService.salvar(
+                academiaId, foto, fotoPrincipalIndex, authentication));
+    }
+
+    @PostMapping("/{academiaId}/lote")
+    public ResponseEntity<List<FotoAcademiaDTO>> salvarLote(
+            @PathVariable Long academiaId,
+            @RequestParam("foto") List<MultipartFile> fotos,
+            @RequestParam(required = false) Integer fotoPrincipalIndex,
+            Authentication authentication) {
+        return ResponseEntity.ok(fotoAcademiaService.salvarLote(
+                academiaId, fotos, fotoPrincipalIndex, authentication));
     }
 
     @GetMapping("/academia/{academiaId}")
@@ -52,5 +64,14 @@ public class FotoAcademiaController {
             Authentication authentication) {
         fotoAcademiaService.inativar(fotoId, authentication);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{academiaId}/{fotoId}/principal")
+    public ResponseEntity<FotoAcademiaDTO> definirComoPrincipal(
+            @PathVariable Long academiaId,
+            @PathVariable Long fotoId,
+            Authentication authentication) {
+        return ResponseEntity.ok(fotoAcademiaService.definirComoPrincipal(
+                academiaId, fotoId, authentication));
     }
 }

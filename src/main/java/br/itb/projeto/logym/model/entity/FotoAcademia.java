@@ -29,6 +29,9 @@ public class FotoAcademia {
     @Column(length = 20, nullable = false)
     private String statusFoto;
 
+    @Column(nullable = false)
+    private boolean principal;
+
     public Long getId() {
         return id;
     }
@@ -53,6 +56,10 @@ public class FotoAcademia {
         return statusFoto;
     }
 
+    public boolean isPrincipal() {
+        return principal;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -75,5 +82,9 @@ public class FotoAcademia {
 
     public void setStatusFoto(String statusFoto) {
         this.statusFoto = statusFoto;
+    }
+
+    public void setPrincipal(boolean principal) {
+        this.principal = principal;
     }
 }

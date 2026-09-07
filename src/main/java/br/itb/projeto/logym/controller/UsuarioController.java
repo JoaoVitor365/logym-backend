@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import br.itb.projeto.logym.dto.UsuarioDTO;
+import br.itb.projeto.logym.dto.UsuarioRequestDTO;
 import br.itb.projeto.logym.model.entity.Usuario;
 import br.itb.projeto.logym.service.UsuarioService;
 
@@ -33,7 +34,7 @@ public class UsuarioController {
     }
 
     @PostMapping({ "", "/create" })
-    public ResponseEntity<Usuario> create(@RequestBody Usuario usuario) {
+    public ResponseEntity<Usuario> create(@RequestBody UsuarioRequestDTO usuario) {
         Usuario createdUsuario = usuarioService.create(usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUsuario);
     }
@@ -61,7 +62,7 @@ public class UsuarioController {
     public ResponseEntity<Usuario> editar(
             @PathVariable Long id,
             @RequestPart(required = false) MultipartFile file,
-            @RequestPart Usuario usuario,
+            @RequestPart UsuarioRequestDTO usuario,
             Authentication authentication) {
 
         usuarioService.validarProprietario(id, authentication);
@@ -78,7 +79,7 @@ public class UsuarioController {
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Usuario> editarJson(
             @PathVariable Long id,
-            @RequestBody Usuario usuario,
+            @RequestBody UsuarioRequestDTO usuario,
             Authentication authentication) {
 
         usuarioService.validarProprietario(id, authentication);

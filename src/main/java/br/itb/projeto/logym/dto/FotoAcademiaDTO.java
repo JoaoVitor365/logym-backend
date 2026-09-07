@@ -8,12 +8,19 @@ public class FotoAcademiaDTO {
     private Long academiaId;
     private String tipoArquivo;
     private LocalDateTime dataCadastro;
+    private boolean principal;
 
-    public FotoAcademiaDTO(Long id, Long academiaId, String tipoArquivo, LocalDateTime dataCadastro) {
+    public FotoAcademiaDTO(
+            Long id,
+            Long academiaId,
+            String tipoArquivo,
+            LocalDateTime dataCadastro,
+            boolean principal) {
         this.id = id;
         this.academiaId = academiaId;
         this.tipoArquivo = tipoArquivo;
         this.dataCadastro = dataCadastro;
+        this.principal = principal;
     }
 
     public Long getId() {
@@ -30,5 +37,9 @@ public class FotoAcademiaDTO {
 
     public LocalDateTime getDataCadastro() {
         return dataCadastro;
+    }
+
+    public boolean isPrincipal() {
+        return principal;
     }
 }

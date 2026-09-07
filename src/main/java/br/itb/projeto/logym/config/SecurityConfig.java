@@ -56,8 +56,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/academias/*").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/academias/*/inativar", "/academias/*/reativar")
                         .hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/academias/proximas", "/academias/proximas/usuario/*")
+                        .hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/academias/comparar").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/academias", "/academias/", "/academias/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/academias/proximas/usuario/*").permitAll()
                         .requestMatchers("/categorias/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/categorias", "/categorias/", "/categorias/ativas").permitAll()
                         .requestMatchers("/facilidades/admin/**").hasRole("ADMIN")
@@ -69,7 +71,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/avaliacoes/academia/*").permitAll()
                         // Fotos das academias
                         .requestMatchers(HttpMethod.POST, "/fotos-academia/*").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/fotos-academia/*/lote").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/fotos-academia/*/inativar").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/fotos-academia/*/*/principal").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.GET, "/fotos-academia/academia/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/fotos-academia/*/imagem").permitAll()
 

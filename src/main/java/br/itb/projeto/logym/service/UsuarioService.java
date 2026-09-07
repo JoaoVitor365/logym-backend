@@ -1,9 +1,11 @@
 package br.itb.projeto.logym.service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -19,7 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import br.itb.projeto.logym.dto.CoordenadasDTO;
+import br.itb.projeto.logym.dto.EnderecoGeocodificacaoDTO;
 import br.itb.projeto.logym.dto.UsuarioDTO;
+import br.itb.projeto.logym.dto.UsuarioRequestDTO;
+import br.itb.projeto.logym.exception.GeocodificacaoException;
 import br.itb.projeto.logym.model.entity.Academia;
 import br.itb.projeto.logym.model.entity.Usuario;
 import br.itb.projeto.logym.repository.AcademiaRepository;
@@ -34,18 +40,21 @@ public class UsuarioService implements UserDetailsService {
     private final SenhaService senhaService;
     private final GerenteRepository gerenteRepository;
     private final AcademiaRepository academiaRepository;
+    private final GeocodificacaoService geocodificacaoService;
 
     public UsuarioService(
             UsuarioRepository usuarioRepository,
             PasswordEncoder passwordEncoder,
             SenhaService senhaService,
             GerenteRepository gerenteRepository,
-            AcademiaRepository academiaRepository) {
+            AcademiaRepository academiaRepository,
+            GeocodificacaoService geocodificacaoService) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.senhaService = senhaService;
         this.gerenteRepository = gerenteRepository;
         this.academiaRepository = academiaRepository;
+        this.geocodificacaoService = geocodificacaoService;
     }
 
     /* ================= LOGIN ================= */
@@ -136,7 +145,8 @@ public class UsuarioService implements UserDetailsService {
 
     /* ================= CREATE ================= */
 
-    public Usuario create(Usuario usuario) {
+    @Transactional
+    public Usuario create(UsuarioRequestDTO usuario) {
 
         if (usuario.getNome() == null || usuario.getNome().trim().isEmpty()) {
             throw new RuntimeException("O nome é obrigatório.");
@@ -171,6 +181,15 @@ public class UsuarioService implements UserDetailsService {
 
         if ("USER".equals(nivelAcesso)) {
             novoUsuario.setCep(limparCep(usuario.getCep()));
+            validarNumero(usuario.getNumero());
+            novoUsuario.setNumero(usuario.getNumero());
+            novoUsuario.setComplemento(usuario.getComplemento());
+
+            if (possuiEnderecoCompleto(usuario, novoUsuario.getCep(), novoUsuario.getNumero())) {
+                CoordenadasDTO coordenadas = geocodificarUsuario(usuario, novoUsuario.getCep(), novoUsuario.getNumero());
+                novoUsuario.setLatitude(coordenadas.latitude());
+                novoUsuario.setLongitude(coordenadas.longitude());
+            }
         } else {
             novoUsuario.setCep(null);
         }
@@ -184,7 +203,8 @@ public class UsuarioService implements UserDetailsService {
 
     /* ================= EDITAR PERFIL ================= */
 
-    public Usuario editar(MultipartFile file, Long id, Usuario usuario) {
+    @Transactional
+    public Usuario editar(MultipartFile file, Long id, UsuarioRequestDTO usuario) {
 
         Usuario usuarioAtual = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
@@ -196,13 +216,48 @@ public class UsuarioService implements UserDetailsService {
         // Não altera username/e-mail aqui.
 
         if ("USER".equals(usuarioAtual.getNivelAcesso())) {
-            String cepLimpo = limparCep(usuario.getCep());
+            String cepAtualizado = usuario.getCep() == null
+                    ? usuarioAtual.getCep()
+                    : limparCep(usuario.getCep());
+            BigDecimal numeroAtualizado = usuario.getNumero() == null
+                    ? usuarioAtual.getNumero()
+                    : usuario.getNumero();
 
-            if (cepLimpo != null && !cepLimpo.isBlank() && cepLimpo.length() != 8) {
+            if (usuario.getCep() != null && !cepAtualizado.isBlank() && cepAtualizado.length() != 8) {
                 throw new RuntimeException("CEP inválido. Informe 8 dígitos.");
             }
 
-            usuarioAtual.setCep(cepLimpo);
+            validarNumero(usuario.getNumero());
+
+            boolean enderecoAlterado = !Objects.equals(limparCep(usuarioAtual.getCep()), cepAtualizado)
+                    || numerosDiferentes(usuarioAtual.getNumero(), numeroAtualizado);
+
+            CoordenadasDTO coordenadas = null;
+            if (enderecoAlterado) {
+                if (!possuiEnderecoCompleto(usuario, cepAtualizado, numeroAtualizado)) {
+                    throw new GeocodificacaoException(
+                            "Endereco completo necessario para atualizar CEP ou numero.");
+                }
+
+                coordenadas = geocodificarUsuario(usuario, cepAtualizado, numeroAtualizado);
+            }
+
+            if (usuario.getCep() != null) {
+                usuarioAtual.setCep(cepAtualizado);
+            }
+
+            if (usuario.getNumero() != null) {
+                usuarioAtual.setNumero(numeroAtualizado);
+            }
+
+            if (usuario.getComplemento() != null) {
+                usuarioAtual.setComplemento(usuario.getComplemento());
+            }
+
+            if (coordenadas != null) {
+                usuarioAtual.setLatitude(coordenadas.latitude());
+                usuarioAtual.setLongitude(coordenadas.longitude());
+            }
         }
 
         usuarioAtual.setDataAtualizacao(LocalDateTime.now());
@@ -371,6 +426,10 @@ public class UsuarioService implements UserDetailsService {
                 usuario.getUsername(),
                 usuario.getNivelAcesso(),
                 usuario.getCep(),
+                usuario.getNumero(),
+                usuario.getComplemento(),
+                usuario.getLatitude(),
+                usuario.getLongitude(),
                 usuario.getFoto(),
                 usuario.getDataCadastro(),
                 usuario.getStatusUsuario());
@@ -479,6 +538,50 @@ public class UsuarioService implements UserDetailsService {
         }
 
         return cep.replaceAll("\\D", "");
+    }
+
+    private CoordenadasDTO geocodificarUsuario(
+            UsuarioRequestDTO usuario,
+            String cep,
+            BigDecimal numero) {
+        return geocodificacaoService.geocodificar(new EnderecoGeocodificacaoDTO(
+                usuario.getEndereco(),
+                numero,
+                usuario.getBairro(),
+                usuario.getCidade(),
+                usuario.getEstado(),
+                cep,
+                usuario.getComplemento()));
+    }
+
+    private boolean possuiEnderecoCompleto(
+            UsuarioRequestDTO usuario,
+            String cep,
+            BigDecimal numero) {
+        return textoPreenchido(usuario.getEndereco())
+                && textoPreenchido(usuario.getBairro())
+                && textoPreenchido(usuario.getCidade())
+                && textoPreenchido(usuario.getEstado())
+                && textoPreenchido(cep)
+                && numero != null;
+    }
+
+    private boolean textoPreenchido(String valor) {
+        return valor != null && !valor.isBlank();
+    }
+
+    private boolean numerosDiferentes(BigDecimal numeroAtual, BigDecimal numeroAtualizado) {
+        if (numeroAtual == null || numeroAtualizado == null) {
+            return numeroAtual != numeroAtualizado;
+        }
+
+        return numeroAtual.compareTo(numeroAtualizado) != 0;
+    }
+
+    private void validarNumero(BigDecimal numero) {
+        if (numero != null && numero.compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Numero invalido. Informe um valor nao negativo.");
+        }
     }
 
     private String normalizarUsername(String username) {
