@@ -60,6 +60,9 @@ public class Academia {
     @Column(precision = 10, scale = 7)
     private BigDecimal longitude;
 
+    @Transient
+    private BigDecimal distanciaKm;
+
     @Column(length = 300)
     private String categorias;
 
@@ -158,6 +161,10 @@ public class Academia {
 
     public BigDecimal getLongitude() {
         return longitude;
+    }
+
+    public BigDecimal getDistanciaKm() {
+        return distanciaKm;
     }
 
     public String getCategorias() {
@@ -270,6 +277,10 @@ public class Academia {
 
     public void setLongitude(BigDecimal longitude) {
         this.longitude = longitude;
+    }
+
+    public void setDistanciaKm(BigDecimal distanciaKm) {
+        this.distanciaKm = distanciaKm;
     }
 
     public void setCategorias(String categorias) {

@@ -35,9 +35,10 @@ public class AcademiaController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) List<Long> categorias,
-            @RequestParam(required = false) List<Long> facilidades) {
+            @RequestParam(required = false) List<Long> facilidades,
+            Authentication authentication) {
         return ResponseEntity.ok(academiaService.findAtivasParaHome(
-                page, search, categorias, facilidades));
+                page, search, categorias, facilidades, authentication));
     }
 
     @GetMapping("/admin/all")
@@ -46,8 +47,10 @@ public class AcademiaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Academia> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(academiaService.findById(id));
+    public ResponseEntity<Academia> findById(
+            @PathVariable Long id,
+            Authentication authentication) {
+        return ResponseEntity.ok(academiaService.findById(id, authentication));
     }
 
     @GetMapping("/gerente/{gerenteId}")

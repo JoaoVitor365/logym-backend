@@ -1,6 +1,7 @@
 package br.itb.projeto.logym.repository;
 
 import java.util.List;
+import java.math.BigDecimal;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,11 +51,77 @@ public interface AcademiaRepository extends JpaRepository<Academia, Long> {
                           and fa.facilidade.id in :facilidadeIds
                     )
               )
-            order by a.id asc
+            order by
+                case
+                    when :latitudeUsuario is not null
+                     and :longitudeUsuario is not null
+                     and a.latitude between -90 and 90
+                     and a.longitude between -180 and 180
+                     and (2.0 * 6371.0 * atan2(
+                            sqrt(
+                                sin(radians((a.latitude - :latitudeUsuario) / 2.0))
+                                    * sin(radians((a.latitude - :latitudeUsuario) / 2.0))
+                                + cos(radians(:latitudeUsuario)) * cos(radians(a.latitude))
+                                    * sin(radians((a.longitude - :longitudeUsuario) / 2.0))
+                                    * sin(radians((a.longitude - :longitudeUsuario) / 2.0))
+                            ),
+                            sqrt(1.0 - (
+                                sin(radians((a.latitude - :latitudeUsuario) / 2.0))
+                                    * sin(radians((a.latitude - :latitudeUsuario) / 2.0))
+                                + cos(radians(:latitudeUsuario)) * cos(radians(a.latitude))
+                                    * sin(radians((a.longitude - :longitudeUsuario) / 2.0))
+                                    * sin(radians((a.longitude - :longitudeUsuario) / 2.0))
+                            ))
+                        )) <= 5.0
+                    then 0
+                    else 1
+                end asc,
+                case
+                    when :latitudeUsuario is not null
+                     and :longitudeUsuario is not null
+                     and a.latitude between -90 and 90
+                     and a.longitude between -180 and 180
+                     and (2.0 * 6371.0 * atan2(
+                            sqrt(
+                                sin(radians((a.latitude - :latitudeUsuario) / 2.0))
+                                    * sin(radians((a.latitude - :latitudeUsuario) / 2.0))
+                                + cos(radians(:latitudeUsuario)) * cos(radians(a.latitude))
+                                    * sin(radians((a.longitude - :longitudeUsuario) / 2.0))
+                                    * sin(radians((a.longitude - :longitudeUsuario) / 2.0))
+                            ),
+                            sqrt(1.0 - (
+                                sin(radians((a.latitude - :latitudeUsuario) / 2.0))
+                                    * sin(radians((a.latitude - :latitudeUsuario) / 2.0))
+                                + cos(radians(:latitudeUsuario)) * cos(radians(a.latitude))
+                                    * sin(radians((a.longitude - :longitudeUsuario) / 2.0))
+                                    * sin(radians((a.longitude - :longitudeUsuario) / 2.0))
+                            ))
+                        )) <= 5.0
+                    then (2.0 * 6371.0 * atan2(
+                        sqrt(
+                            sin(radians((a.latitude - :latitudeUsuario) / 2.0))
+                                * sin(radians((a.latitude - :latitudeUsuario) / 2.0))
+                            + cos(radians(:latitudeUsuario)) * cos(radians(a.latitude))
+                                * sin(radians((a.longitude - :longitudeUsuario) / 2.0))
+                                * sin(radians((a.longitude - :longitudeUsuario) / 2.0))
+                        ),
+                        sqrt(1.0 - (
+                            sin(radians((a.latitude - :latitudeUsuario) / 2.0))
+                                * sin(radians((a.latitude - :latitudeUsuario) / 2.0))
+                            + cos(radians(:latitudeUsuario)) * cos(radians(a.latitude))
+                                * sin(radians((a.longitude - :longitudeUsuario) / 2.0))
+                                * sin(radians((a.longitude - :longitudeUsuario) / 2.0))
+                        ))
+                    ))
+                    else null
+                end asc,
+                a.id asc
             """)
     Page<Academia> findAtivasParaHome(
             @Param("search") String search,
             @Param("categoriaIds") List<Long> categoriaIds,
             @Param("facilidadeIds") List<Long> facilidadeIds,
+            @Param("latitudeUsuario") BigDecimal latitudeUsuario,
+            @Param("longitudeUsuario") BigDecimal longitudeUsuario,
             Pageable pageable);
 }

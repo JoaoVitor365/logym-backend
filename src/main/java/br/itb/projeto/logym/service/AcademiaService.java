@@ -104,15 +104,27 @@ public class AcademiaService {
             int page,
             String search,
             List<Long> categoriaIds,
-            List<Long> facilidadeIds) {
+            List<Long> facilidadeIds,
+            Authentication authentication) {
+        Usuario usuario = buscarUsuarioParaDistancia(authentication);
+        BigDecimal latitudeUsuario = possuiCoordenadasValidas(usuario)
+                ? usuario.getLatitude()
+                : null;
+        BigDecimal longitudeUsuario = possuiCoordenadasValidas(usuario)
+                ? usuario.getLongitude()
+                : null;
+
         Page<Academia> academias = academiaRepository.findAtivasParaHome(
                 normalizarBusca(search),
                 normalizarIds(categoriaIds),
                 normalizarIds(facilidadeIds),
+                latitudeUsuario,
+                longitudeUsuario,
                 PageRequest.of(page, TAMANHO_PAGINA_HOME));
 
         List<Academia> content = academias.getContent().stream()
                 .map(this::carregarCategoriasVinculadas)
+                .map(academia -> adicionarDistancia(usuario, academia))
                 .toList();
 
         return new PaginaAcademiasDTO(
@@ -142,6 +154,12 @@ public class AcademiaService {
                 .orElseThrow(() -> new RuntimeException("Academia nao encontrada."));
 
         return carregarCategoriasVinculadas(academia);
+    }
+
+    @Transactional(readOnly = true)
+    public Academia findById(Long id, Authentication authentication) {
+        Academia academia = findById(id);
+        return adicionarDistancia(buscarUsuarioParaDistancia(authentication), academia);
     }
 
     public List<AcademiaProximaDTO> findProximasPorUsuario(Authentication authentication) {
@@ -508,7 +526,7 @@ public class AcademiaService {
                 academia.getNome(),
                 buscarFotoPrincipal(academia.getId()),
                 academia.getNota(),
-                calcularDistanciaParaComparacao(usuario, academia),
+                calcularDistanciaParaUsuario(usuario, academia),
                 academia.getEndereco(),
                 academia.getNumero(),
                 academia.getComplemento(),
@@ -557,7 +575,7 @@ public class AcademiaService {
                 .toList();
     }
 
-    private BigDecimal calcularDistanciaParaComparacao(Usuario usuario, Academia academia) {
+    private BigDecimal calcularDistanciaParaUsuario(Usuario usuario, Academia academia) {
         if (!possuiCoordenadasValidas(usuario.getLatitude(), usuario.getLongitude())
                 || !possuiCoordenadasValidas(academia.getLatitude(), academia.getLongitude())) {
             return null;
@@ -567,12 +585,33 @@ public class AcademiaService {
                 .setScale(2, RoundingMode.HALF_UP);
     }
 
+    private Usuario buscarUsuarioParaDistancia(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            return null;
+        }
+
+        return usuarioRepository.findByUsername(normalizarUsername(authentication.getName()))
+                .filter(usuario -> "USER".equals(usuario.getNivelAcesso()))
+                .filter(usuario -> "ATIVO".equals(usuario.getStatusUsuario()))
+                .orElse(null);
+    }
+
+    private Academia adicionarDistancia(Usuario usuario, Academia academia) {
+        academia.setDistanciaKm(usuario == null ? null : calcularDistanciaParaUsuario(usuario, academia));
+        return academia;
+    }
+
     private boolean possuiCoordenadasValidas(BigDecimal latitude, BigDecimal longitude) {
         return latitude != null && longitude != null
                 && latitude.compareTo(BigDecimal.valueOf(-90)) >= 0
                 && latitude.compareTo(BigDecimal.valueOf(90)) <= 0
                 && longitude.compareTo(BigDecimal.valueOf(-180)) >= 0
                 && longitude.compareTo(BigDecimal.valueOf(180)) <= 0;
+    }
+
+    private boolean possuiCoordenadasValidas(Usuario usuario) {
+        return usuario != null && possuiCoordenadasValidas(usuario.getLatitude(), usuario.getLongitude());
     }
 
     private boolean possuiCoordenadas(Academia academia) {
