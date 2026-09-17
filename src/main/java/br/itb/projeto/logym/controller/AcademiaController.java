@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import br.itb.projeto.logym.dto.AcademiaProximaDTO;
 import br.itb.projeto.logym.dto.AcademiaComparacaoDTO;
+import br.itb.projeto.logym.dto.PaginaAcademiasDTO;
 import br.itb.projeto.logym.model.entity.Academia;
 import br.itb.projeto.logym.service.AcademiaService;
 
@@ -27,6 +28,16 @@ public class AcademiaController {
     @GetMapping({ "", "/" })
     public ResponseEntity<List<Academia>> findAll() {
         return ResponseEntity.ok(academiaService.findAllAtivas());
+    }
+
+    @GetMapping("/home")
+    public ResponseEntity<PaginaAcademiasDTO> findParaHome(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) List<Long> categorias,
+            @RequestParam(required = false) List<Long> facilidades) {
+        return ResponseEntity.ok(academiaService.findAtivasParaHome(
+                page, search, categorias, facilidades));
     }
 
     @GetMapping("/admin/all")

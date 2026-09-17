@@ -14,6 +14,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ import br.itb.projeto.logym.dto.EnderecoGeocodificacaoDTO;
 import br.itb.projeto.logym.dto.AcademiaProximaDTO;
 import br.itb.projeto.logym.dto.AcademiaComparacaoDTO;
 import br.itb.projeto.logym.dto.FotoAcademiaDTO;
+import br.itb.projeto.logym.dto.PaginaAcademiasDTO;
 import br.itb.projeto.logym.exception.GeocodificacaoException;
 import br.itb.projeto.logym.model.entity.Academia;
 import br.itb.projeto.logym.model.entity.Categoria;
@@ -50,6 +53,7 @@ public class AcademiaService {
 
     private static final double RAIO_PADRAO_KM = 5.0;
     private static final double RAIO_TERRA_KM = 6_371.0;
+    private static final int TAMANHO_PAGINA_HOME = 16;
 
     private final AcademiaRepository academiaRepository;
     private final GerenteRepository gerenteRepository;
@@ -93,6 +97,30 @@ public class AcademiaService {
 
     public List<Academia> findAllAtivas() {
         return carregarCategoriasVinculadas(academiaRepository.findByStatusAcademia("ATIVO"));
+    }
+
+    @Transactional(readOnly = true)
+    public PaginaAcademiasDTO findAtivasParaHome(
+            int page,
+            String search,
+            List<Long> categoriaIds,
+            List<Long> facilidadeIds) {
+        Page<Academia> academias = academiaRepository.findAtivasParaHome(
+                normalizarBusca(search),
+                normalizarIds(categoriaIds),
+                normalizarIds(facilidadeIds),
+                PageRequest.of(page, TAMANHO_PAGINA_HOME));
+
+        List<Academia> content = academias.getContent().stream()
+                .map(this::carregarCategoriasVinculadas)
+                .toList();
+
+        return new PaginaAcademiasDTO(
+                content,
+                academias.getNumber(),
+                academias.getSize(),
+                academias.getTotalElements(),
+                academias.getTotalPages());
     }
 
     public List<Academia> findAll() {
@@ -585,6 +613,25 @@ public class AcademiaService {
         carregarFotoPrincipal(academia);
 
         return academia;
+    }
+
+    private String normalizarBusca(String search) {
+        if (search == null || search.isBlank()) {
+            return null;
+        }
+
+        return search.trim();
+    }
+
+    private List<Long> normalizarIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return null;
+        }
+
+        return ids.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
     }
 
     private Academia carregarFacilidadesVinculadas(Academia academia) {
