@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import br.itb.projeto.logym.model.entity.Academia;
@@ -21,15 +22,18 @@ public class FavoritoService {
     private final FavoritoRepository favoritoRepository;
     private final UsuarioRepository usuarioRepository;
     private final AcademiaRepository academiaRepository;
+    private final AcademiaService academiaService;
 
     public FavoritoService(
             FavoritoRepository favoritoRepository,
             UsuarioRepository usuarioRepository,
-            AcademiaRepository academiaRepository
+            AcademiaRepository academiaRepository,
+            AcademiaService academiaService
     ) {
         this.favoritoRepository = favoritoRepository;
         this.usuarioRepository = usuarioRepository;
         this.academiaRepository = academiaRepository;
+        this.academiaService = academiaService;
     }
 
     public boolean toggleFavorito(Long usuarioId, Long academiaId, Authentication authentication) {
@@ -80,10 +84,12 @@ public class FavoritoService {
                 .orElse(false);
     }
 
+    @Transactional(readOnly = true)
     public List<Academia> findAcademiasFavoritas(Long usuarioId, Authentication authentication) {
         validarUsuarioSolicitado(usuarioId, authentication);
 
-        return favoritoRepository.findAcademiasFavoritasAtivasByUsuarioId(usuarioId);
+        return academiaService.enriquecerParaListagem(
+                favoritoRepository.findAcademiasFavoritasAtivasByUsuarioId(usuarioId));
     }
 
     private void validarUsuarioSolicitado(Long usuarioId, Authentication authentication) {

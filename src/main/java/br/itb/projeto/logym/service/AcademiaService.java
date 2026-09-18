@@ -634,6 +634,10 @@ public class AcademiaService {
         return 2 * RAIO_TERRA_KM * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
     }
 
+    public List<Academia> enriquecerParaListagem(List<Academia> academias) {
+        return carregarCategoriasVinculadas(academias);
+    }
+
     private List<Academia> carregarCategoriasVinculadas(List<Academia> academias) {
         academias.forEach(this::carregarCategoriasVinculadas);
         return academias;
