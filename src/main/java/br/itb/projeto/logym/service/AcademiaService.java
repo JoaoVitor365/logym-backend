@@ -53,7 +53,7 @@ public class AcademiaService {
 
     private static final double RAIO_PADRAO_KM = 5.0;
     private static final double RAIO_TERRA_KM = 6_371.0;
-    private static final int TAMANHO_PAGINA_HOME = 16;
+    private static final int TAMANHO_PAGINA_HOME = 15;
 
     private final AcademiaRepository academiaRepository;
     private final GerenteRepository gerenteRepository;
