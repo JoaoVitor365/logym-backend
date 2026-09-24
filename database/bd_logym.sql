@@ -319,8 +319,21 @@ VALUES ('Admin', 'admin@logym.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8yp
 INSERT Usuario (nome, username, password, nivelAcesso, cep, numero, complemento, latitude, longitude, foto, dataCadastro, dataAtualizacao, statusUsuario)
 VALUES ('João Pedro', 'joaopedro@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'MANAGER', NULL, NULL, NULL, NULL, NULL, NULL, GETDATE(), NULL, 'ATIVO');
 --                                                  123123
+
 INSERT Usuario (nome, username, password, nivelAcesso, cep, numero, complemento, latitude, longitude, foto, dataCadastro, dataAtualizacao, statusUsuario) 
 VALUES ('Rodrigo Wagner', 'rodrigowagner@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'MANAGER', NULL, NULL, NULL, NULL, NULL, NULL, GETDATE(), NULL, 'ATIVO');
+--                                                          123123
+
+INSERT Usuario (nome, username, password, nivelAcesso, cep, numero, complemento, latitude, longitude, foto, dataCadastro, dataAtualizacao, statusUsuario)
+VALUES ('Gabriel Santos', 'gabrielsantos@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'MANAGER', NULL, NULL, NULL, NULL, NULL, NULL, GETDATE(), NULL, 'ATIVO');
+--                                                          123123
+
+INSERT Usuario (nome, username, password, nivelAcesso, cep, numero, complemento, latitude, longitude, foto, dataCadastro, dataAtualizacao, statusUsuario)
+VALUES ('Felipe Almeida', 'felipealmeida@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'MANAGER', NULL, NULL, NULL, NULL, NULL, NULL, GETDATE(), NULL, 'ATIVO');
+--                                                          123123
+
+INSERT Usuario (nome, username, password, nivelAcesso, cep, numero, complemento, latitude, longitude, foto, dataCadastro, dataAtualizacao, statusUsuario)
+VALUES ('Bruno Martins', 'brunomartins@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt2Y.qxs3uTkvwlT8ypuJ3BgA/EWAIqrgE/.', 'MANAGER', NULL, NULL, NULL, NULL, NULL, NULL, GETDATE(), NULL, 'ATIVO');
 --                                                          123123
 
 
@@ -329,8 +342,21 @@ VALUES ('Rodrigo Wagner', 'rodrigowagner@email.com', '$2a$10$anXp8SeNMzeIpQKKwMt
 INSERT Gerente (nome, cpf, telefone, dataNascimento, usuario_id, dataCadastro, statusGerente)
 VALUES ('João Pedro', '99202457042', '(11) 99999-8888', '2000-04-04', 2, GETDATE(), 'ATIVO');
 --
+
 INSERT Gerente (nome, cpf, telefone, dataNascimento, usuario_id, dataCadastro, statusGerente) 
 VALUES ('Rodrigo Wagner', '48372619573', '(11) 98888-4545', '1981-08-24', 3, GETDATE(), 'ATIVO');
+--
+
+INSERT Gerente (nome, cpf, telefone, dataNascimento, usuario_id, dataCadastro, statusGerente)
+VALUES ('Gabriel Santos', '71384290613', '(11) 90000-1003', '1992-05-17', 4, GETDATE(), 'ATIVO');
+--
+
+INSERT Gerente (nome, cpf, telefone, dataNascimento, usuario_id, dataCadastro, statusGerente)
+VALUES ('Felipe Almeida', '52819476309', '(11) 90000-1004', '1988-11-09', 5, GETDATE(), 'ATIVO');
+--
+
+INSERT Gerente (nome, cpf, telefone, dataNascimento, usuario_id, dataCadastro, statusGerente)
+VALUES ('Bruno Martins', '86130742517', '(11) 90000-1005', '1995-02-22', 6, GETDATE(), 'ATIVO');
 ----
 
 
@@ -430,7 +456,7 @@ VALUES
 (
     'Smart Fit Barueri Centro',
     '90100000000156',
-    'Academia da rede Smart Fit localizada no Centro de Barueri, com estrutura para musculação e treinos funcionais.',
+    'Academia da rede Smart Fit localizada no Centro de Barueri, com estrutura voltada à musculação, exercícios aeróbicos e diferentes modalidades de treinamento.',
     '06401050',
     'Avenida Vinte e Seis de Março',
     701,
@@ -438,13 +464,13 @@ VALUES
     'Centro',
     'Barueri',
     'SP',
-    '(11) 4002-1000',
-    '(11) 99999-1000',
+    '(11) 90000-0021',
+    NULL,
     'smartfit.baruericentro@logym.com',
-    -23.5111040,
-    -46.8822250,
-    'Musculação, Funcional, Personal Trainer',
-    'Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
+    -23.5111036,
+    -46.8822247,
+    'Musculação, Spinning',
+    'Acessibilidade, Ar-condicionado, Vestiário',
     NULL,
     1,
     GETDATE(),
@@ -453,7 +479,7 @@ VALUES
 (
     'Smart Fit Estrada das Pitas',
     '90100001000109',
-    'Academia da rede Smart Fit localizada na região do Parque Viana, em Barueri.',
+    'Academia da rede Smart Fit localizada no Parque Viana, em Barueri, com estrutura voltada à musculação e ao condicionamento físico.',
     '06449300',
     'Estrada das Pitas',
     899,
@@ -464,10 +490,10 @@ VALUES
     '(11) 4002-1001',
     '(11) 99999-1001',
     'smartfit.estradadaspitas@logym.com',
-    -23.5483373,
-    -46.8755277,
-    'Musculação, Funcional, Personal Trainer',
-    'Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
+    -23.5474947,
+    -46.8708770,
+    'Musculação, Funcional',
+    'Estacionamento, Ar-condicionado, Vestiário',
     NULL,
     1,
     GETDATE(),
@@ -476,21 +502,21 @@ VALUES
 (
     'Smart Fit Parque Shopping Barueri',
     '90100002000145',
-    'Academia da rede Smart Fit localizada no Parque Shopping Barueri.',
+    'Academia da rede Smart Fit localizada no Parque Shopping Barueri, com estrutura voltada à musculação, condicionamento físico e diferentes modalidades de treinamento.',
     '06440180',
-    'Rua General de Divisão de Pedro Rodrigues da Silva',
+    'Rua General de Divisão Pedro Rodrigues da Silva',
     400,
     'Parque Shopping Barueri',
-    'Nova Aldeinha',
+    'Vila Militar',
     'Barueri',
     'SP',
     '(11) 4002-1002',
     '(11) 99999-1002',
     'smartfit.parqueshoppingbarueri@logym.com',
-    -23.5119000,
-    -46.8539000,
-    'Musculação, Funcional, Personal Trainer',
-    'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
+    -23.5163178,
+    -46.8555254,
+    'Musculação, Funcional',
+    'Estacionamento, Acessibilidade, Ar-condicionado, Vestiário',
     NULL,
     1,
     GETDATE(),
@@ -499,7 +525,7 @@ VALUES
 (
     'Smart Fit Carrefour Hiper Tamboré',
     '90100003000190',
-    'Academia da rede Smart Fit localizada na região de Alphaville/Tamboré.',
+    'Academia da rede Smart Fit localizada na região de Alphaville e Tamboré, em Barueri, com estrutura voltada à musculação e ao condicionamento físico.',
     '06455000',
     'Alameda Araguaia',
     2751,
@@ -510,10 +536,10 @@ VALUES
     '(11) 4002-1003',
     '(11) 99999-1003',
     'smartfit.carrefourtambore@logym.com',
-    -23.5005000,
-    -46.8420000,
-    'Musculação, Funcional, Personal Trainer',
-    'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
+    -23.5012064,
+    -46.8360441,
+    'Musculação, Funcional',
+    'Estacionamento, Acessibilidade, Ar-condicionado, Vestiário',
     NULL,
     1,
     GETDATE(),
@@ -522,7 +548,7 @@ VALUES
 (
     'Smart Fit Sodimac Alphaville',
     '90100004000134',
-    'Academia da rede Smart Fit localizada no estacionamento do Sodimac Alphaville.',
+    'Academia da rede Smart Fit localizada no complexo do Sodimac Alphaville, em Barueri, com estrutura voltada à musculação e ao condicionamento físico.',
     '06455000',
     'Alameda Araguaia',
     1801,
@@ -533,10 +559,10 @@ VALUES
     '(11) 4002-1004',
     '(11) 99999-1004',
     'smartfit.sodimacalphaville@logym.com',
-    -23.5032000,
-    -46.8475000,
-    'Musculação, Funcional, Personal Trainer',
-    'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
+    -23.4992055,
+    -46.8439797,
+    'Musculação, Funcional',
+    'Estacionamento, Acessibilidade, Ar-condicionado, Vestiário',
     NULL,
     1,
     GETDATE(),
@@ -545,7 +571,7 @@ VALUES
 (
     'Smart Fit Shopping Flamingo Alphaville',
     '90100005000189',
-    'Academia da rede Smart Fit localizada no Shopping Flamingo Alphaville.',
+    'Academia da rede Smart Fit localizada no Shopping Flamingo Alphaville, em Barueri, com estrutura voltada à musculação e ao condicionamento físico.',
     '06455000',
     'Alameda Araguaia',
     762,
@@ -556,10 +582,10 @@ VALUES
     '(11) 4002-1005',
     '(11) 99999-1005',
     'smartfit.shoppingflamingo@logym.com',
-    -23.5005000,
-    -46.8420000,
-    'Musculação, Funcional, Personal Trainer',
-    'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
+    -23.4989517,
+    -46.8536578,
+    'Musculação, Funcional',
+    'Estacionamento, Acessibilidade, Ar-condicionado, Vestiário',
     NULL,
     1,
     GETDATE(),
@@ -568,7 +594,7 @@ VALUES
 (
     'Bluefit Barueri',
     '90100006000123',
-    'Academia da rede Bluefit localizada em Bethaville, Barueri.',
+    'Academia da rede Bluefit localizada em Bethaville, em Barueri, com estrutura voltada à musculação, treinamento funcional, lutas e diferentes modalidades de condicionamento físico.',
     '06404326',
     'Avenida Trindade',
     344,
@@ -576,13 +602,13 @@ VALUES
     'Bethaville I',
     'Barueri',
     'SP',
-    '(11) 4002-1006',
-    '(11) 99999-1006',
+    '(11) 90000-0006',
+    NULL,
     'bluefit.barueri@logym.com',
-    -23.5059729,
-    -46.8678626,
-    'Musculação, Funcional, Lutas, Spinning',
-    'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
+    -23.5061707,
+    -46.8676243,
+    'Musculação, Funcional, Lutas',
+    'Estacionamento, Acessibilidade, Ar-condicionado, Vestiário',
     NULL,
     2,
     GETDATE(),
@@ -591,21 +617,21 @@ VALUES
 (
     'Bluefit Alphaville',
     '90100007000178',
-    'Academia da rede Bluefit localizada em Alphaville, Barueri.',
-    '06454010',
+    'Academia da rede Bluefit localizada em Alphaville, em Barueri, com estrutura voltada à musculação, treinamento funcional e atividades de condicionamento físico.',
+    '06454070',
     'Alameda Amazonas',
     388,
     NULL,
     'Alphaville Centro Industrial',
     'Barueri',
     'SP',
-    '(11) 4002-1007',
-    '(11) 99999-1007',
+    '(11) 94041-1693',
+    NULL,
     'bluefit.alphaville@logym.com',
-    -23.4990000,
-    -46.8520000,
-    'Musculação, Funcional, Lutas, Spinning',
-    'Estacionamento, Ar-condicionado, Vestiário, Chuveiro, Wi-Fi, Armários',
+    -23.4967593,
+    -46.8435111,
+    'Musculação, Funcional, Spinning',
+    'Estacionamento, Ar-condicionado, Vestiário',
     NULL,
     2,
     GETDATE(),
@@ -979,6 +1005,538 @@ VALUES
     GETDATE(),
     'ATIVO'
 );
+----------------- INSERTS NOVAS ACADEMIAS DE BARUERI -----------------
+
+INSERT INTO Academia
+(
+    nome, cnpj, descricao, cep, endereco, numero, complemento,
+    bairro, cidade, estado, telefone, celular, email,
+    latitude, longitude,
+    categorias, facilidades, nota, gerente_id, dataCadastro, statusAcademia
+)
+VALUES
+
+-- 1. PANOBIANCO ACADEMIA - BARUERI CENTRO
+-- Gerente: João Pedro
+(
+    'Panobianco Academia - Barueri Centro',
+    '98000001000130',
+    'Academia localizada na região central de Barueri, voltada à prática de musculação, exercícios aeróbicos e atividades para diferentes perfis de alunos, com ampla faixa de horários de funcionamento.',
+    '06401126',
+    'Rua Jose Maria Balieiro',
+    267,
+    NULL,
+    'Centro',
+    'Barueri',
+    'SP',
+    '(11) 91775-7019',
+    NULL,
+    NULL,
+    -23.5093657,
+    -46.8696010,
+    'Musculação, Dança, Spinning',
+    'Vestiário',
+    NULL,
+    1,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 2. ACADEMIA PRIMAX
+-- Gerente: João Pedro
+(
+    'Academia Primax',
+    '98000002000185',
+    'Academia situada no Centro de Barueri, com ambiente destinado a musculação e condicionamento físico, atendendo alunos que buscam saúde, qualidade de vida e evolução nos treinamentos.',
+    '06401050',
+    'Avenida Vinte e Seis de Março',
+    1331,
+    NULL,
+    'Centro',
+    'Barueri',
+    'SP',
+    '(11) 93800-6025',
+    NULL,
+    NULL,
+    -23.5099022,
+    -46.8879723,
+    'Musculação, Funcional, Dança',
+    'Wi-Fi, Ar-condicionado, Vestiário',
+    NULL,
+    1,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 3. RED FITNESS
+-- Gerente: Felipe Almeida
+(
+    'Red Fitness',
+    '98000003000120',
+    'Academia localizada no Parque dos Camargos, em Barueri, com estrutura voltada à musculação, treinamento funcional, treino de força e condicionamento físico para diferentes perfis de alunos.',
+    '06436000',
+    'Avenida Zélia',
+    902,
+    NULL,
+    'Parque dos Camargos',
+    'Barueri',
+    'SP',
+    '(11) 93337-2220',
+    NULL,
+    NULL,
+    -23.5389523,
+    -46.8873503,
+    'Musculação, Funcional',
+    'Wi-Fi, Vestiário',
+    NULL,
+    4,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 4. HOLY SPIRIT ACADEMIA
+-- Gerente: Gabriel Santos
+(
+    'Holy Spirit Academia',
+    '98000004000174',
+    'Academia localizada no Jardim Silveira, com foco em musculação, condicionamento físico e desenvolvimento de uma rotina de exercícios adequada a diferentes objetivos.',
+    '06433000',
+    'Avenida Mun.',
+    254,
+    NULL,
+    'Jardim Silveira',
+    'Barueri',
+    'SP',
+    '(11) 91065-2321',
+    NULL,
+    NULL,
+    -23.5231974,
+    -46.8916591,
+    'Musculação, Funcional',
+    'Wi-Fi, Estacionamento, Acessibilidade, Ar-condicionado, Vestiário',
+    NULL,
+    3,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 5. FITNESS ACADEMY
+-- Gerente: Felipe Almeida
+(
+    'Fitness Academy',
+    '98000005000119',
+    'Academia de bairro localizada no Jardim Alberto, oferecendo ambiente para treinamento físico, musculação e melhoria do condicionamento e qualidade de vida.',
+    '06433220',
+    'Rua Dr. Francis D Hornet',
+    120,
+    NULL,
+    'Jardim Alberto',
+    'Barueri',
+    'SP',
+    '(11) 96640-9164',
+    NULL,
+    NULL,
+    -23.5218524,
+    -46.8912353,
+    'Musculação, Funcional',
+    'Vestiário',
+    NULL,
+    4,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 6. ACADEMIA SMITHFIT
+-- Gerente: Felipe Almeida
+(
+    'Academia SmithFit',
+    '98000007000108',
+    'Academia localizada no Jardim Belval, com proposta voltada a musculação, condicionamento físico e prática regular de exercícios em ambiente acessível à comunidade local.',
+    '06420210',
+    'Avenida Itaqui',
+    346,
+    NULL,
+    'Jardim Belval',
+    'Barueri',
+    'SP',
+    '(11) 99648-7393',
+    NULL,
+    NULL,
+    -23.5084703,
+    -46.8934736,
+    'Musculação',
+    'Wi-Fi, Vestiário',
+    NULL,
+    4,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 7. ACADEMIA EVOLUTION
+-- Gerente: Felipe Almeida
+(
+    'Academia Evolution',
+    '98000008000152',
+    'Academia situada em Barueri, direcionada à prática de musculação e atividades de condicionamento físico para alunos com diferentes objetivos.',
+    '06420180',
+    'Rua Salgueiro',
+    78,
+    NULL,
+    'Jardim Belval',
+    'Barueri',
+    'SP',
+    '(11) 4163-2536',
+    NULL,
+    NULL,
+    -23.5081682,
+    -46.8947092,
+    'Musculação',
+    'Wi-Fi, Estacionamento, Vestiário',
+    NULL,
+    4,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 8. FLASH POINT ACADEMIA
+-- Gerente: Gabriel Santos
+(
+    'Flash Point Academia',
+    '98000009000105',
+    'Academia localizada no Jardim Silveira, oferecendo espaço dedicado a musculação e condicionamento físico, com horários amplos para facilitar a rotina dos alunos.',
+    '06433010',
+    'Avenida Brigadeiro Manoel Rodrigues Jordão',
+    552,
+    NULL,
+    'Jardim Silveira',
+    'Barueri',
+    'SP',
+    '(11) 4552-5494',
+    NULL,
+    NULL,
+    -23.5259199,
+    -46.8899837,
+    'Musculação, Dança',
+    'Vestiário',
+    NULL,
+    3,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 9. BODYUP ACADEMIA BARUERI
+-- Gerente: Bruno Martins
+(
+    'BodyUp Academia Barueri',
+    '98000010000121',
+    'Academia localizada na Vila Pindorama, voltada ao treinamento físico, musculação e desenvolvimento da saúde e do condicionamento corporal.',
+    '06415000',
+    'Avenida Capitão Francisco César',
+    1540,
+    NULL,
+    'Vila Pindorama',
+    'Barueri',
+    'SP',
+    '(11) 98416-3335',
+    NULL,
+    NULL,
+    -23.4872198,
+    -46.8940557,
+    'Musculação, Funcional, Pilates, Dança, Lutas',
+    'Wi-Fi, Estacionamento, Acessibilidade, Vestiário',
+    NULL,
+    5,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 10. ACADEMIA TEXFIT
+-- Gerente: João Pedro
+(
+    'Academia Texfit',
+    '98000011000176',
+    'Academia situada no Centro de Barueri, oferecendo estrutura para musculação e exercícios físicos, com ampla disponibilidade de horários ao longo da semana.',
+    '06401127',
+    'Rua Joao Acacio de Almeida',
+    153,
+    NULL,
+    'Centro',
+    'Barueri',
+    'SP',
+    '(11) 94321-3876',
+    NULL,
+    NULL,
+    -23.5087224,
+    -46.8675195,
+    'Musculação, Pilates, Funcional, Lutas, Dança, Spinning',
+    'Wi-Fi, Estacionamento, Acessibilidade, Ar-condicionado, Vestiário',
+    NULL,
+    1,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 11. SKYFIT ESTRADA DOS ROMEIROS
+-- Gerente: Rodrigo Wagner
+(
+    'SkyFit Estrada dos Romeiros',
+    '98000012000110',
+    'Unidade localizada na Estrada dos Romeiros, com ambiente dedicado à musculação, atividades aeróbicas e condicionamento físico para diferentes perfis de usuários.',
+    '06417000',
+    'Estrada dos Romeiros',
+    1565,
+    NULL,
+    'Vila Sao Silvestre',
+    'Barueri',
+    'SP',
+    '(11) 97369-4005',
+    NULL,
+    NULL,
+    -23.4928333,
+    -46.8810514,
+    'Musculação, Funcional, Dança',
+    'Estacionamento, Acessibilidade, Vestiário',
+    NULL,
+    2,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 12. NEW POWER FITNESS ACADEMIA
+-- Gerente: Bruno Martins
+(
+    'New Power Fitness Academia',
+    '98000013000165',
+    'Academia localizada no Parque Ribeiro de Lima, oferecendo espaço para musculação e atividades de condicionamento físico em ambiente direcionado à prática regular de exercícios.',
+    '06405030',
+    'Rua Mar do Caribe',
+    51,
+    'Sala 2',
+    'Parque Ribeiro de Lima',
+    'Barueri',
+    'SP',
+    '(11) 96526-2128',
+    NULL,
+    NULL,
+    -23.5020253,
+    -46.8966088,
+    'Musculação, Funcional',
+    'Vestiário',
+    NULL,
+    5,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 13. ACADEMIA PARA MULHERES BARUERI
+-- Gerente: Gabriel Santos
+(
+    'Academia Para Mulheres Barueri',
+    '98000014000100',
+    'Academia voltada ao público feminino, localizada em Barueri, com proposta direcionada à prática de exercícios, condicionamento físico e promoção da saúde e bem-estar.',
+    '06404000',
+    'Rua Damião Fernandes',
+    105,
+    NULL,
+    'Vila Srg. Jose de Paula',
+    'Barueri',
+    'SP',
+    '(11) 2771-5663',
+    NULL,
+    NULL,
+    -23.5097625,
+    -46.8725986,
+    'Funcional',
+    'Vestiário',
+    NULL,
+    3,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 14. ON FORCE ACADEMIA - BARUERI
+-- Gerente: Bruno Martins
+(
+    'ON FORCE Academia - BARUERI',
+    '98000015000154',
+    'Academia localizada no Jardim Regina Alice, com foco em musculação, treinamento físico e desenvolvimento de força, resistência e condicionamento corporal.',
+    '06412100',
+    'Rua Ver. José Viêira',
+    367,
+    NULL,
+    'Jardim Regina Alice',
+    'Barueri',
+    'SP',
+    '(11) 97157-7564',
+    NULL,
+    NULL,
+    -23.5003295,
+    -46.8797943,
+    'Musculação, Funcional, Lutas',
+    'Vestiário',
+    NULL,
+    5,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 15. ACADEMIA 24 WELLNESS - UNIDADE ALPHAVILLE
+-- Gerente: Rodrigo Wagner
+(
+    'Academia 24 Wellness - Unidade Alphaville',
+    '98000016000107',
+    'Academia localizada em Alphaville Industrial, com estrutura voltada à musculação, condicionamento físico e prática regular de exercícios, oferecendo horários amplos para diferentes rotinas de treinamento.',
+    '06454050',
+    'Alameda Grajaú',
+    525,
+    NULL,
+    'Alphaville Industrial',
+    'Barueri',
+    'SP',
+    '(11) 91537-1685',
+    NULL,
+    NULL,
+    -23.4938686,
+    -46.8476774,
+    'Musculação, Funcional, Lutas',
+    'Estacionamento, Acessibilidade, Vestiário',
+    NULL,
+    2,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 16. HOLY SPIRIT ACADEMIA - JARDIM PAULISTA
+-- Gerente: Gabriel Santos
+(
+    'Holy Spirit Academia - Jardim Paulista',
+    '98000017000143',
+    'Unidade localizada no Jardim Paulista, oferecendo ambiente destinado à musculação, condicionamento físico e treinamento para usuários com diferentes níveis de experiência.',
+    '06447170',
+    'Avenida Marginal Direita',
+    780,
+    NULL,
+    'Jardim Paulista',
+    'Barueri',
+    'SP',
+    '(11) 99376-0397',
+    NULL,
+    NULL,
+    -23.5392539,
+    -46.8782956,
+    'Musculação, Funcional',
+    'Wi-Fi, Estacionamento, Acessibilidade, Ar-condicionado, Vestiário',
+    NULL,
+    3,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 17. SKYFIT ALPHAVILLE
+-- Gerente: Rodrigo Wagner
+(
+    'Skyfit Alphaville',
+    '98000018000198',
+    'Academia localizada em Alphaville Industrial, com estrutura voltada à musculação, exercícios aeróbicos e condicionamento físico, atendendo diferentes perfis de alunos.',
+    '06455010',
+    'Avenida Juruá',
+    343,
+    NULL,
+    'Alphaville Industrial',
+    'Barueri',
+    'SP',
+    '(11) 98804-0056',
+    NULL,
+    NULL,
+    -23.5009117,
+    -46.8547114,
+    'Musculação, Funcional, Pilates, Dança, Lutas',
+    'Vestiário',
+    NULL,
+    2,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 18. IRONBERG ALPHAVILLE
+-- Gerente: Rodrigo Wagner
+(
+    'Ironberg Alphaville',
+    '98000019000132',
+    'Academia localizada em Barueri, com funcionamento 24 horas e ambiente voltado à musculação e ao treinamento físico para diferentes níveis de experiência.',
+    '06465100',
+    'Estrada Aldeinha',
+    181,
+    NULL,
+    'Jardim Santa Cecilia',
+    'Barueri',
+    'SP',
+    '(11) 95558-0797',
+    NULL,
+    NULL,
+    -23.5085641,
+    -46.8477651,
+    'Musculação',
+    'Estacionamento, Acessibilidade, Ar-condicionado, Vestiário',
+    NULL,
+    2,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 19. MISTER BIG ACADEMIA
+-- Gerente: Bruno Martins
+(
+    'Mister Big Academia',
+    '98000020000167',
+    'Academia localizada no Jardim Itaparica, com espaço direcionado à musculação, condicionamento físico e manutenção de uma rotina regular de exercícios.',
+    '06447020',
+    'Avenida Cidade de Itu',
+    140,
+    NULL,
+    'Jardim Itaparica',
+    'Barueri',
+    'SP',
+    '(11) 4201-3978',
+    NULL,
+    NULL,
+    -23.5415005,
+    -46.8829314,
+    'Musculação, Funcional',
+    'Vestiário',
+    NULL,
+    5,
+    GETDATE(),
+    'ATIVO'
+),
+
+-- 20. ACADEMIA GAVIÕES 24H - ALPHAVILLE
+-- Gerente: Rodrigo Wagner
+(
+    'Academia Gaviões 24h - Alphaville',
+    '98000022000156',
+    'Academia localizada em Alphaville, com funcionamento 24 horas e estrutura voltada à musculação, treinamento físico e diferentes modalidades de atividades para diversos perfis de alunos.',
+    '06455020',
+    'Avenida Juruá',
+    253,
+    NULL,
+    'Alphaville',
+    'Barueri',
+    'SP',
+    '(11) 94074-7584',
+    NULL,
+    NULL,
+    -23.5005887,
+    -46.8537846,
+    'Musculação, Funcional, Lutas, Dança, Pilates, Spinning',
+    'Acessibilidade, Ar-condicionado, Vestiário',
+    NULL,
+    2,
+    GETDATE(),
+    'ATIVO'
+);
+
+----------------- FIM INSERTS NOVAS ACADEMIAS DE BARUERI -----------------
 
 ----------------- INSERTS CATEGORIAS DAS ACADEMIAS FICTÍCIAS -----------------
 INSERT INTO CategoriaAcademia (academia_id, categoria_id, dataCadastro, observacao, statusCategoriaAcademia)
